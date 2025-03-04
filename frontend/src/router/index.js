@@ -1,9 +1,11 @@
 import {createApp} from 'vue';
 import Router from 'vue-router';
-import Login from '@/views/Login.vue';
+import Login from '@/views/LoginView.vue';
 import SignUp from '@/views/SignUp.vue';
 import Mybookings from '@/views/Mybookings.vue';
 import ClassRoomInformation from '@/views/ClassRoomInformation.vue';
+import LoginView from '@/views/LoginView.vue';
+import ProfileView from '@/views/ProfileView.vue';
 
 createApp.use(Router);
 
@@ -12,10 +14,10 @@ export default new Router({
         {
             path: '/',
             name: 'login',
-            component: Login
+            component: LoginView
         },
         {
-            path: '/signup',
+            path: '/signup',    
             component:SignUp
         },
         {
@@ -25,6 +27,10 @@ export default new Router({
         {
             path: '/classrooms',
             component: ClassRoomInformation
-        }
+        },
+        {
+            path: 'profile',
+            component: ProfileView
+        },
     ]
 });
