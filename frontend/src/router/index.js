@@ -1,6 +1,5 @@
 import {createApp} from 'vue';
 import Router from 'vue-router';
-import Login from '@/views/LoginView.vue';
 import SignUp from '@/views/SignUp.vue';
 import Mybookings from '@/views/Mybookings.vue';
 import ClassRoomInformation from '@/views/ClassRoomInformation.vue';

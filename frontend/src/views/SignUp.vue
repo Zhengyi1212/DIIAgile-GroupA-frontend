@@ -72,7 +72,10 @@
             </button>
           </div>
         </form>
-  
+        
+        <div :style="{ backgroundImage: `url(${backgroundUrl})` }" class="dynamic-bg">
+        
+         </div>
         <!-- Navigate to Login Page -->
         <p class="additional-info">
           Already have an account?
