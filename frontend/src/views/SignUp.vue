@@ -1,8 +1,14 @@
 <template>
+    
+  <div class="background-container"  v-bind:style="{ backgroundImage: `url(${currentUrl})` }">
+    <div class="top-style">
+      <h1>DIICSU Booking System</h1>
+    </div>
+    
     <div class="register-wrapper">
       <div class="register-container card">
         <h2 class="register-title">
-          Register
+          Sign Up
         </h2>
         <form
           class="register-form"
@@ -73,9 +79,10 @@
           </div>
         </form>
         
-        <div :style="{ backgroundImage: `url(${backgroundUrl})` }" class="dynamic-bg">
         
-         </div>
+         
+
+       
         <!-- Navigate to Login Page -->
         <p class="additional-info">
           Already have an account?
@@ -87,6 +94,8 @@
         </p>
       </div>
     </div>
+  </div>
+
   </template>
   
   <script>
@@ -97,9 +106,38 @@
         password: "",
         confirmPassword: "",
         inviteCode: "", // Invite code field
+        images : [ 
+        require('@/assets/csu1.jpg'),
+        require('@/assets/csu2.jpg'),
+        require('@/assets/csu3.jpg'),
+        
+      ],
+      currentIndex: 0,
+      currentUrl: require('@/assets/csu1.jpg') // Correct way to load the default image
+   
       };
     },
+   
+
+    mounted() {
+     
+      this.startImageLoop();
+      
+    },
+
+
+
     methods: {
+      startImageLoop() {
+      setInterval(() => {
+        this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        console.log(this.currentIndex)
+        this.currentUrl = this.images[this.currentIndex];
+        console.log(this.currentUrl)
+      }, 3000); 
+      
+     },
+
       handleRegister() {
         if (this.password !== this.confirmPassword) {
           alert("The passwords do not match. Please try again!");
@@ -157,21 +195,53 @@
   };
   </script>
   
+
+
   <style scoped>
   /* Styles consistent with login page */
+
+  .background-container {
+   
+    position: relative;
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  background-image: v-bind(currentUrl);
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.5s ease-in-out;
+  background-repeat: no-repeat;
+}
+
+.top-style {
+  display: flex ;
+  position: fixed;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%); 
+  font-size: 2.0rem;
+  font-weight: bold;
+  color: #4A90E2;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  white-space: nowrap; 
+}
+
   .register-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f9;
+    ;
   }
   
   .register-container {
-    padding: 20px;
+    position: fixed;
+    padding: 15px;
     border-radius: 10px;
+    top: 150px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: white;
+    background-color:rgba(255,255,255,0.7);
     width: 100%;
     max-width: 400px;
     text-align: center;

@@ -1,25 +1,15 @@
 <template>
-  <SignUp>
-
-  </SignUp>
-
-
+	<div id="app">
+		<router-view></router-view>
+	</div>
 </template>
 
 <script>
-
-import SignUp from './views/SignUp.vue';
-
-	export default{
-		name:"app",
-		components: {
-			SignUp		
-		}
-
-                          
-}
+export default {
+	name: "App"
+};
 </script>
 
 <style>
-
+/* 这里可以添加全局样式 */
 </style>
