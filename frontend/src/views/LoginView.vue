@@ -62,7 +62,7 @@ export default {
   },
 
   mounted() {
-    this.checkToken();
+    this.checkToken(this.Username);
     this.startImageLoop();
 
   },
@@ -72,10 +72,10 @@ export default {
     startImageLoop() {
       setInterval(() => {
         this.currentIndex = (this.currentIndex + 1) % this.images.length;
-        console.log(this.currentIndex)
+       
         this.currentUrl = this.images[this.currentIndex];
-        console.log(this.currentUrl)
-      }, 3000);
+        
+      }, 4000);
 
     },
 
@@ -94,11 +94,12 @@ export default {
       };
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/login", {  // Flask API 地址
+        const response = await fetch("http://127.0.0.1:5000/login", {  // Flask API 地址
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          
           body: JSON.stringify(loginData),
         });
 
@@ -124,13 +125,15 @@ export default {
       this.Username = "";
       this.Password = "";
     },
+
     goToRegister() {
       if (!this.isLoading) {
         event.preventDefault();
         console.log("Jump to the registration page");
-        this.$router.push("/SignUp");
+        this.$router.push("/signup");
       }
     },
+
     isTokenValid(token) {
       if (!token) return false;
       try {
@@ -148,7 +151,16 @@ export default {
       if (token && this.isTokenValid(token)) {
         const userInfo = this.parseToken(token);
         console.log("Token is valid, welcome, user ID:", userInfo.user_id, "Role:", userInfo.role);
-        this.$router.push("/classrooms");
+        //this.$router.push(`/classrooms/${username}/${role}`);
+        this.$router.push(
+          {
+            path : '/home',
+            query : {
+              username : userInfo.user_id,
+              role : userInfo.role,
+            }
+          }
+        );
       } else {
         console.log("The token is invalid or has expired, please log in again!");
       }

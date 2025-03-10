@@ -105,7 +105,7 @@
         username: "",
         password: "",
         confirmPassword: "",
-        inviteCode: "", // Invite code field
+        inviteCode: "", 
         images : [ 
         require('@/assets/csu1.jpg'),
         require('@/assets/csu2.jpg'),
@@ -113,7 +113,7 @@
         
       ],
       currentIndex: 0,
-      currentUrl: require('@/assets/csu1.jpg') // Correct way to load the default image
+      currentUrl: require('@/assets/csu1.jpg') 
    
       };
     },
@@ -131,9 +131,9 @@
       startImageLoop() {
       setInterval(() => {
         this.currentIndex = (this.currentIndex + 1) % this.images.length;
-        console.log(this.currentIndex)
+        
         this.currentUrl = this.images[this.currentIndex];
-        console.log(this.currentUrl)
+       
       }, 3000); 
       
      },
@@ -145,29 +145,35 @@
         }
   
         // Set role based on invite code
-        let role = "Customer"; // Default role is Customer
-        if (this.inviteCode === "store1234") {
-          // Validate invite code (replace with your actual invite code logic)
-          role = "StoreManager";
+        let role = "Student"; // Default role is Customer
+
+
+        // change here!!!!
+        if (this.inviteCode === "demo-lecturer") {
+          // 改成 “invite code incorrect, refuse to register”
+          role = "lecturer";
         }
+
+        ////change here
   
-        const registerData = {
-          Username: this.username,
-          Password: this.password,
-          Role: role, // Role set based on invite code
+        const SignUpData = {
+          username: this.username,
+          password: this.password,
+          role: role, // Role set based on invite code
         };
   
-        console.log(registerData);
+        console.log(SignUpData);
         // Send registration request to the backend
         fetch(
-          "/api/SystemRegister.php",
+          "http://127.0.0.1:5000/signup",     //
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(registerData),
+            body: JSON.stringify(SignUpData),
           }
         )
-          .then((response) => response.json())
+          .then((response) => response.json()) 
+             
           .then((data) => {
             if (data.success) {
               alert("Registration successful! Please login.");
@@ -177,17 +183,22 @@
               alert("Registration failed: " + data.message);
             }
           })
+
+
+
           .catch((error) => {
             console.error("Registration request failed:", error);
-            alert("Registration request failed. Please try again later!");
+            alert("Sign up request failed. Please try again later!");
           });
       },
+
       resetForm() {
         this.username = "";
         this.password = "";
         this.confirmPassword = "";
-        this.inviteCode = ""; // Reset invite code
+        this.inviteCode = ""; 
       },
+
       goToLogin() {
         this.$router.push("/login");
       },
@@ -199,7 +210,6 @@
 
   <style scoped>
   /* Styles consistent with login page */
-
   .background-container {
    
     position: relative;
@@ -312,3 +322,5 @@
   }
   </style>
   
+
+
