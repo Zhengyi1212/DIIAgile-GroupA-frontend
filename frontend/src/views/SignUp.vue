@@ -13,7 +13,20 @@
         <form
           class="register-form"
           @submit.prevent="handleRegister"
-        >
+        > 
+
+          <!-- Email Input -->
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input
+              id="umail"
+              v-model="username"
+              type="text"
+              placeholder="Enter your Dundee email"
+              required
+            >
+          </div>
+
           <!-- Username Input -->
           <div class="form-row">
             <label for="username">Username</label>
@@ -102,6 +115,7 @@
   export default {
     data() {
       return {
+        email: "",
         username: "",
         password: "",
         confirmPassword: "",
@@ -157,6 +171,7 @@
         ////change here
   
         const SignUpData = {
+          email: this.email,
           username: this.username,
           password: this.password,
           role: role, // Role set based on invite code
@@ -193,6 +208,7 @@
       },
 
       resetForm() {
+        this.email = "";
         this.username = "";
         this.password = "";
         this.confirmPassword = "";
