@@ -1,91 +1,109 @@
 <template>
   <el-container>
-     <el-header>
-        <naviBarAndButton :username="username" :role="role">
-        </naviBarAndButton>
-     </el-header>
-     <el-main>
-        <main class="main-content">
-           <!-- 筛选区域 -->
-           <div class="filters-container">
-              <div class="filter-group">
-                 <label>校区：</label>
-                 <select v-model="selectedCampus" class="styled-select">
-                    <option value="">全部校区</option>
-                    <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
-                       {{ campus.name }}
-                    </option>
-                 </select>
-              </div>
+    <el-header>
+      <naviBarAndButton :username="username" :role="role">
+      </naviBarAndButton>
+    </el-header>
+    <el-main>
+      <main class="main-content">
+        <!-- Filter Area -->
+        <div class="filters-container">
+          <div class="filter-group">
+            <label>Campus:</label>
+            <select v-model="selectedCampus" class="styled-select">
+              <option value="">All Campuses</option>
+              <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
+                {{ campus.name }}
+              </option>
+            </select>
+          </div>
 
-              <div class="filter-group">
-                 <label>教学楼：</label>
-                 <select v-model="selectedBuilding" class="styled-select">
-                    <option value="">全部教学楼</option>
-                    <option v-for="building in filteredBuildings" :key="building">
-                       {{ building }}
-                    </option>
-                 </select>
-              </div>
+          <div class="filter-group">
+            <label>Building:</label>
+            <select v-model="selectedBuilding" class="styled-select">
+              <option value="">All Buildings</option>
+              <option v-for="building in filteredBuildings" :key="building">
+                {{ building }}
+              </option>
+            </select>
+          </div>
 
-              <div class="filter-group">
-                 <label>楼层：</label>
-                 <select v-model="selectedFloor" class="styled-select">
-                    <option value="">全部楼层</option>
-                    <option v-for="floor in filteredFloors" :key="floor">
-                       {{ floor }}
-                    </option>
-                 </select>
-              </div>
-           </div>
-          <!-- 日期选择器 -->
+          <div class="filter-group">
+            <label>Floor:</label>
+            <select v-model="selectedFloor" class="styled-select">
+              <option value="">All Floors</option>
+              <option v-for="floor in filteredFloors" :key="floor">
+                {{ floor }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-group">
+  <label>Min Capacity:</label>
+  <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
+</div>
+
+<div class="filter-group">
+  <label>Equipment:</label>
+  <select v-model="selectedEquipment" class="styled-select">
+    <option value="">Any</option>
+    <option v-for="equip in equipmentOptions" :key="equip">
+      {{ equip }}
+    </option>
+  </select>
+</div>
+
+        </div>
+
+        <!-- Date Selector -->
         <div class="date-selector">
-              <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
-                 :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
-                 {{ getFormattedDate(offset - 1) }}
-              </button>
-           </div>
-           <div class="content-container">
-              <!-- 教室列表 -->
-              <div class="pagination-controls">
-                 <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
-                 <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-                 <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+          <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
+            :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
+            {{ getFormattedDate(offset - 1) }}
+          </button>
+        </div>
+
+        <div class="content-container">
+          <!-- Classroom List -->
+          <div class="pagination-controls">
+            <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
+            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+          </div>
+          <div class="classroom-grid">
+            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card"
+              :class="{ selected: selectedRoom?.id === room.id }" @click="selectRoom(room)">
+              <div class="card-header">
+                <h3 class="room-name">{{ room.name }}</h3>
+                <span class="capacity-badge">{{ room.capacity }} people</span>
               </div>
-              <div class="classroom-grid">
-                 <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card"
-                    :class="{ selected: selectedRoom?.id === room.id }" @click="selectRoom(room)">
-                    <div class="card-header">
-                       <h3 class="room-name">{{ room.name }}</h3>
-                       <span class="capacity-badge">{{ room.capacity }}人</span>
-                    </div>
-                    <div class="card-body">
-                       <div class="room-info">
-                          <span class="info-item">🖥️ {{ room.equipment || '多媒体设备' }}</span>
-                          <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
-                       </div>
-                    </div>
-                 </div>
+              <div class="card-body">
+                <div class="room-info">
+                  <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
+                  <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
+                </div>
               </div>
-           </div>
-          
-           <!-- 时间表 -->
-           <div v-if="selectedRoom" class="timetable-container">
-              <h3 class="timetable-title">{{ selectedRoom.name }} 预约时间表</h3>
-              <div class="time-grid">
-                 <div v-for="slot in timeSlots" :key="slot" class="time-slot"
-                    :class="{ available: isSlotAvailable(slot), booked: !isSlotAvailable(slot) }"
-                    @click="bookSlot(slot)">
-                    <span class="slot-time">{{ slot }}</span>
-                    <span v-if="isSlotAvailable(slot)" class="slot-status">可预约</span>
-                    <span v-else class="slot-status">已占用</span>
-                 </div>
-              </div>
-           </div>
-        </main>
-     </el-main>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timetable -->
+        <div v-if="selectedRoom" class="timetable-container">
+          <h3 class="timetable-title">{{ selectedRoom.name }} Reservation Timetable</h3>
+          <div class="time-grid">
+            <div v-for="slot in timeSlots" :key="slot" class="time-slot"
+              :class="{ available: isSlotAvailable(slot), booked: !isSlotAvailable(slot) }"
+              @click="bookSlot(slot)">
+              <span class="slot-time">{{ slot }}</span>
+              <span v-if="isSlotAvailable(slot)" class="slot-status">Available</span>
+              <span v-else class="slot-status">Booked</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </el-main>
   </el-container>
 </template>
+
 
 <script>
 import NaviBarAndButton from '@/components/NaviBarAndButton.vue';
@@ -100,45 +118,48 @@ export default {
       username: '',
       role: '',
       campuses: [
-        { id: '1', name: '南校区' },
-        { id: '2', name: '北校区' }
+        { id: '1', name: 'South Campus' },
+        { id: '2', name: 'North Campus' }
       ],
       buildings: {
-        '1': ['教学楼A', '教学楼B'],
-        '2': ['教学楼C', '教学楼D']
+        '1': ['Building A', 'Building B'],
+        '2': ['Building C', 'Building D']
       },
       rooms: [
-        { id: '101', name: 'A101', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '102', name: 'A102', capacity: 40, building: '教学楼A', floor: '1层', equipment: '白板' },
-        { id: '103', name: 'A103', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '105', name: 'A105', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '106', name: 'A106', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '104', name: 'A104', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '107', name: 'A107', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '108', name: 'A108', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '109', name: 'A109', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '110', name: 'A110', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '111', name: 'A111', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '112', name: 'A112', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '113', name: 'A113', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '114', name: 'A114', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '115', name: 'A115', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '116', name: 'A116', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '117', name: 'A117', capacity: 50, building: '教学楼A', floor: '1层', equipment: '投影仪' },
-        { id: '201', name: 'B201', capacity: 60, building: '教学楼B', floor: '2层', equipment: '电脑' }
+        { id: '101', name: 'A101', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '102', name: 'A102', capacity: 40, building: 'Building A', floor: '1st Floor', equipment: 'Whiteboard' },
+        { id: '103', name: 'A103', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '105', name: 'A105', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '106', name: 'A106', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '104', name: 'A104', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '107', name: 'A107', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '108', name: 'A108', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '109', name: 'A109', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '110', name: 'A110', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '201', name: 'B201', capacity: 60, building: 'Building B', floor: '2nd Floor', equipment: 'Computer' }
       ],
       currentPage: 1,
       roomsPerPage: 12,
       selectedCampus: '',
       selectedBuilding: '',
       selectedFloor: '',
+      selectedCapacity: '',
+    selectedEquipment: '',
       selectedRoom: null,
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00'],
+      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0]
     };
   },
   computed: {
+    capacityOptions() {
+    // 生成唯一的容量选项
+    return [...new Set(this.rooms.map(room => room.capacity))].sort((a, b) => a - b);
+  },
+  equipmentOptions() {
+    // 生成唯一的设备选项
+    return [...new Set(this.rooms.map(room => room.equipment))];
+  },
     filteredBuildings() {
       return this.selectedCampus ? this.buildings[this.selectedCampus] || [] : [];
     },
@@ -152,12 +173,14 @@ export default {
       return Array.from(floors);
     },
     filteredRooms() {
-      return this.rooms.filter(room => {
-        return (
-          (!this.selectedBuilding || room.building === this.selectedBuilding) &&
-          (!this.selectedFloor || room.floor === this.selectedFloor)
-        );
-      });
+    return this.rooms.filter(room => {
+      return (
+        (!this.selectedBuilding || room.building === this.selectedBuilding) &&
+        (!this.selectedFloor || room.floor === this.selectedFloor) &&
+        (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
+        (!this.selectedEquipment || room.equipment === this.selectedEquipment)
+      );
+    });
     },
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredRooms.length / this.roomsPerPage));
@@ -169,9 +192,6 @@ export default {
     }
   },
   methods: {
-
-
-
     getInfor() {
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
@@ -180,7 +200,7 @@ export default {
     },
     parseToken(token) {
       try {
-        const base64Url = token.split(".")[1];  // JWT 结构为 header.payload.signature
+        const base64Url = token.split(".")[1];  
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
@@ -204,44 +224,47 @@ export default {
       }
       this.bookedSlots[this.selectedRoom.id][this.selectedDate].push(slot);
     },
-    
     getFormattedDate(offset) {
       const date = new Date();
       date.setDate(date.getDate() + offset);
       return date.toISOString().split('T')[0];
     },
     nextPage() {
-   
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-     
-    } 
-  }, 
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      
-    }
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      } 
+    }, 
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
   },
-  
-  
   mounted() {
     this.getInfor();
   },
   watch: {
     filteredRooms() {
-      this.currentPage = 1; // 重新过滤时，重置到第一页
+      this.currentPage = 1;
     }
   }
-}
 };
-
-
 </script>
+
+
+
+
 
 <style scoped>
 .el-main {
   padding-top: 60px; /* 调整这个值以确保内容不会与导航栏重叠 */
+}
+.styled-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  width: 100px;
 }
 
 .main-content {
