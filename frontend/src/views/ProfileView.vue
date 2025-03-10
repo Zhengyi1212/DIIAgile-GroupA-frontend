@@ -4,25 +4,26 @@
       <naviBarAndButton :username="user.username" :role="user.role">
       </naviBarAndButton>
     </el-header>
-
+  <!--
+    add "Edit button"-->
     <el-main>
       <div class="profile-container">
         <div class="centered-card">
           <div class="user-card">
             <div class="card-header">
-              <h2 class="user-title">👤 用户信息</h2>
+              <h2 class="user-title">👤 User Information</h2>
               <div class="decorative-line"></div>
             </div>
 
             <div class="card-body">
               <div class="info-box">
                 <div class="info-item">
-                  <span class="info-label">用户名：</span>
+                  <span class="info-label">Username:</span>
                   <span class="info-value align-right">{{ user.username }}</span>
                 </div>
 
                 <div class="info-item">
-                  <span class="info-label">邮箱：</span>
+                  <span class="info-label">Email</span>
                   <span class="info-value align-right email-text">{{ user.email }}</span>
                 </div>
 
@@ -39,7 +40,7 @@
                 </div>
 
                 <div class="info-item">
-                  <span class="info-label">角色：</span>
+                  <span class="info-label">Role:</span>
                   <span class="info-value align-right role-tag">{{ user.role }}</span>
                 </div>
               </div>
@@ -60,8 +61,7 @@ export default {
     return {
       showPassword: false,
       user: {
-        username: 'Chris',
-        realPassword: 'myp@ssw0rd',
+        username: 'MOMo',
         password: '********',
         role: 'Student',
         email: 'chris@edu.com'
@@ -74,11 +74,27 @@ export default {
   created() {
     this.user.username = this.$route.query.username;
     this.user.role = this.$route.query.role;
+   
   },
   methods: {
     togglePassword() {
       this.showPassword = !this.showPassword;
-    }
+    },
+    getInEmail() {
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      this.email = userInfo.email;
+    },
+    parseToken(token) {
+      try {
+        const base64Url = token.split(".")[1];  // JWT 结构为 header.payload.signature
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(decodeURIComponent(escape(atob(base64))));
+      } catch (error) {
+        console.error("Token parsing error:", error);
+        return null;
+      }
+    },
   }
 };
 </script>

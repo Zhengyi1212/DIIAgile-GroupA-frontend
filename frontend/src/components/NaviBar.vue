@@ -58,7 +58,7 @@ export default {
             this.$router.push({
                 path: '/profile',
                 query: {
-                    username: userInfo.user_id,
+                    username: userInfo.username,
                     role: userInfo.role
                 }
             }

@@ -63,7 +63,7 @@ export default {
             this.$router.push({
                 path: '/profile',
                 query: {
-                    username: userInfo.user_id,
+                    username: userInfo.username,
                     role: userInfo.role
                 }
             }
@@ -77,7 +77,7 @@ export default {
                 {
                     path: '/home',
                     query: {
-                        username: userInfo.user_id,
+                        username: userInfo.username,
                         role: userInfo.role
                     }
                 }
@@ -89,7 +89,7 @@ export default {
             this.$router.push({
                 path: '/classrooms',
                 query: {
-                    username: userInfo.user_id,
+                    username: userInfo.username,
                     role: userInfo.role
                 }
             }
@@ -101,7 +101,7 @@ export default {
             this.$router.push({
                 path: '/mybookings',
                 query: {
-                    username: userInfo.user_id,
+                    username: userInfo.username,
                     role: userInfo.role
                 }
             }

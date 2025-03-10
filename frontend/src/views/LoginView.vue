@@ -13,8 +13,8 @@
         <form class="login-form" @submit.prevent="handleLogin">
 
           <div class="form-row">
-            <label for="Username">Username</label>
-            <input id="Username" v-model="Username" type="text" placeholder="Enter your username" required>
+            <label for="Email">Username</label>
+            <input id="Email" v-model="Username" type="text" placeholder="Enter your email" required>
           </div>
 
 
@@ -47,8 +47,8 @@
 export default {
   data() {
     return {
-      Username: "",
-      Password: "",
+      email: "",
+      password: "",
       isLoading: false,
       images: [
         require('@/assets/boat.jpg'),
@@ -81,16 +81,16 @@ export default {
 
 
     async handleLogin() {
-      if (!this.Username || !this.Password) {
-        alert("Please enter your username and password");
+      if (!this.email || !this.password) {
+        alert("Please enter your email and password");
         return;
       }
 
       this.isLoading = true;
 
       const loginData = {
-        username: this.Username,  // JSON 键名一般使用小写
-        password: this.Password,
+        email: this.email,  
+        password: this.password,
       };
 
       try {
@@ -150,13 +150,13 @@ export default {
       const token = localStorage.getItem("token");
       if (token && this.isTokenValid(token)) {
         const userInfo = this.parseToken(token);
-        console.log("Token is valid, welcome, user ID:", userInfo.user_id, "Role:", userInfo.role);
+        console.log("Token is valid, welcome, user ID:", userInfo.username, "Role:", userInfo.role);
         //this.$router.push(`/classrooms/${username}/${role}`);
         this.$router.push(
           {
             path : '/home',
             query : {
-              username : userInfo.user_id,
+              username : userInfo.username,
               role : userInfo.role,
             }
           }

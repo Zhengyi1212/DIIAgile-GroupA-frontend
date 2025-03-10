@@ -124,7 +124,7 @@ export default {
     getInfor() {
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
-      this.username = userInfo.user_id;
+      this.username = userInfo.username;
       this.role = userInfo.role;
     },
     parseToken(token) {
