@@ -13,14 +13,14 @@
         <form class="login-form" @submit.prevent="handleLogin">
 
           <div class="form-row">
-            <label for="Email">Username</label>
-            <input id="Email" v-model="Username" type="text" placeholder="Enter your email" required>
+            <label for="email">Username</label>
+            <input id="email" v-model="email" type="email" placeholder="Enter your email" required>
           </div>
 
 
           <div class="form-row">
-            <label for="Password">Password</label>
-            <input id="Password" v-model="Password" type="password" placeholder="Enter your password" required>
+            <label for="password">Password</label>
+            <input id="password" v-model="password" type="password" placeholder="Enter your password" required>
           </div>
 
 
@@ -49,6 +49,7 @@ export default {
     return {
       email: "",
       password: "",
+      usaername: "",
       isLoading: false,
       images: [
         require('@/assets/boat.jpg'),
@@ -91,6 +92,7 @@ export default {
       const loginData = {
         email: this.email,  
         password: this.password,
+        username: this.username,
       };
 
       try {
@@ -122,8 +124,8 @@ export default {
     }
     ,
     resetForm() {
-      this.Username = "";
-      this.Password = "";
+      this.email = "";
+      this.password = "";
     },
 
     goToRegister() {
@@ -150,7 +152,7 @@ export default {
       const token = localStorage.getItem("token");
       if (token && this.isTokenValid(token)) {
         const userInfo = this.parseToken(token);
-        console.log("Token is valid, welcome, user ID:", userInfo.username, "Role:", userInfo.role);
+        console.log("Token is valid, welcome, username:", userInfo.username, "Role:", userInfo.role);
         //this.$router.push(`/classrooms/${username}/${role}`);
         this.$router.push(
           {
