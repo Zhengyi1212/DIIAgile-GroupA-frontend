@@ -2,70 +2,62 @@
   <el-container>
     <el-header>
       <naviBarAndButton :username="user.username" :role="user.role"></naviBarAndButton>
-      
     </el-header>
-    
-    <el-main>
+
+    <el-main class="main-content">
       <div class="profile-container">
-        <div class="centered-card">
-          <div class="user-card">
+        <el-card class="user-card">
+          <template #header>
             <div class="card-header">
-              <h2 class="user-title">👤 User Information</h2>
-              <div class="decorative-line"></div>
+              <h2 class="user-title">User Profile</h2>
+              <el-divider></el-divider>
             </div>
+          </template>
 
-            <div class="card-body">
-              <div class="info-box">
-                <div class="info-item">
-                  <span class="info-label">Username: </span>
-                  <span v-if="!isEditing" class="info-value align-right">{{ user.username }}</span>
-                  <el-input v-else v-model="user.username" placeholder="Enter username" class="edit-input"></el-input>
-                </div>
+          <el-form label-width="120px" label-position="left">
+            <el-form-item label="Username:">
+              <span v-if="!isEditing">{{ user.username }}</span>
+              <el-input 
+                v-else 
+                v-model="user.username" 
+                placeholder="Enter username"
+                clearable
+              />
+            </el-form-item>
 
-                <div class="info-item">
-                  <span class="info-label">Email: </span>
-                  <span class="info-value align-right email-text">{{ user.email }}</span>
-                </div>
+            <el-form-item label="Email:">
+              <span>{{ user.email }}</span>
+            </el-form-item>
 
-                <div class="info-item password-item">
-                  <div class="password-container">
-                    <span class="info-label ">Password: </span>
-                    <span v-if="!isEditing" class="info-value align-right">
-                      {{ showPassword ? user.realPassword : user.password }}
-                    </span>
-                    <el-input 
-                      v-else 
-                      v-model="user.realPassword" 
-                      placeholder="Enter new password"
-                      class="edit-input"
-                      style="width: 240px"
-                      type="password"
-                      show-password
-                    />
-                  </div>
-                </div>
+            <el-form-item label="Password:">
+              <span v-if="!isEditing">
+                {{ showPassword ? user.realPassword : '********' }}
+              </span>
+              <el-input
+                v-else
+                v-model="user.realPassword"
+                placeholder="Enter new password"
+                type="password"
+                show-password
+                clearable
+              />
+            </el-form-item>
 
-                <div class="info-item">
-                  <span class="info-label">Role: </span>
-                  <span class="info-value align-right role-tag">{{ user.role }}</span>
-                </div>
+            <el-form-item label="Role:">
+              <el-tag type="info">{{ user.role }}</el-tag>
+            </el-form-item>
 
-                <div class="edit-actions" v-if="isEditing">
-                  <el-button type="success" @click="saveChanges" class="action-button">Save Changes</el-button>
-                  <el-button type="danger" @click="cancelEdit" class="action-button">Cancel</el-button>
-                </div>
-
-                <div class="edit-actions" v-else>
-                  <el-button type="primary" @click="startEdit" class="action-button">Edit Profile</el-button>
-                </div>
+            <el-form-item>
+              <div v-if="isEditing" class="action-buttons">
+                <el-button type="primary" @click="saveChanges">Save Changes</el-button>
+                <el-button @click="cancelEdit">Cancel</el-button>
               </div>
-            </div>
-          </div>
-          
-        </div>
+              <el-button v-else type="primary" @click="startEdit">Edit Profile</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
       </div>
     </el-main>
-    
   </el-container>
 </template>
 
@@ -157,3 +149,52 @@ export default {
 };
 </script>
 
+<style scoped>
+/* 新增间距样式 */
+.el-header {
+  margin-bottom: 20px;  /* 导航栏底部增加间距 */
+}
+
+.main-content {
+  margin-top: 30px;     /* 主内容区域顶部增加间距 */
+}
+
+.profile-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px;   /* 增加容器内边距 */
+}
+
+/* 保持其他样式不变 */
+.user-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.user-title {
+  color: #303133;
+  font-size: 24px;
+  margin: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.el-form-item {
+  margin-bottom: 24px;
+}
+
+.el-tag {
+  font-size: 14px;
+  padding: 0 10px;
+  height: 28px;
+  line-height: 26px;
+}
+</style>
