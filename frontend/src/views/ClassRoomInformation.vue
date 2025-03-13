@@ -38,7 +38,13 @@
                  </select>
               </div>
            </div>
-
+          <!-- 日期选择器 -->
+        <div class="date-selector">
+              <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
+                 :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
+                 {{ getFormattedDate(offset - 1) }}
+              </button>
+           </div>
            <div class="content-container">
               <!-- 教室列表 -->
               <div class="pagination-controls">
@@ -62,13 +68,7 @@
                  </div>
               </div>
            </div>
-          <!-- 日期选择器 -->
-        <div class="date-selector">
-              <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
-                 :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
-                 {{ getFormattedDate(offset - 1) }}
-              </button>
-           </div>
+          
            <!-- 时间表 -->
            <div v-if="selectedRoom" class="timetable-container">
               <h3 class="timetable-title">{{ selectedRoom.name }} 预约时间表</h3>
