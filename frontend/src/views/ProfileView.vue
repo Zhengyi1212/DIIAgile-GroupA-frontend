@@ -125,10 +125,11 @@ export default {
     async saveChanges() {
 
       const profileData = {
+        email : this.user.email,
         password: this.user.password,
         username: this.user.username,
       };
-      
+
       console.log(profileData)
       console.log(JSON.stringify(profileData))
 
@@ -147,7 +148,7 @@ export default {
 
         if (data.success) {
           localStorage.setItem("token", data.token);
-          this.checkToken();
+          
           alert("Profile modification sucessful!");
         } else {
           alert("Fail to modify the profile: " + data.message);
@@ -159,6 +160,7 @@ export default {
         this.isLoading = false;
       }
     }
+    
   }
 };
 </script>

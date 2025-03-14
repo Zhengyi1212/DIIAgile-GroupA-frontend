@@ -96,7 +96,7 @@ export default {
       };
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/login", {  // Flask API 地址
+        const response = await fetch("http://127.0.0.1:5000/login", {  
           method: "POST",
           headers: {
             "Content-Type": "application/json",

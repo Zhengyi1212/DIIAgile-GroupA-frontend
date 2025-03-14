@@ -218,6 +218,7 @@ export default {
       return this.filteredRooms.slice(start, end);
     }
   },
+  
   methods: {
     getInfor() {
       const token = localStorage.getItem("token");
@@ -225,6 +226,7 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
