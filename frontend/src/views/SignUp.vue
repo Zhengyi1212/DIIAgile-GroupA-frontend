@@ -19,8 +19,8 @@
           <div class="form-row">
             <label for="email">Email</label>
             <input
-              id="umail"
-              v-model="username"
+              id="email"
+              v-model="email"
               type="text"
               placeholder="Enter your Dundee email"
               required

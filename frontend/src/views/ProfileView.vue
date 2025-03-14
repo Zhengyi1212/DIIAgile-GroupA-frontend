@@ -90,6 +90,7 @@ export default {
   
     this.originalUser = JSON.parse(JSON.stringify(this.user));
   },
+
   methods: {
     getEmail() {
       const token = localStorage.getItem("token");
@@ -98,6 +99,7 @@ export default {
         this.user.email = userInfo.email;
       }
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];
@@ -108,41 +110,53 @@ export default {
         return null;
       }
     },
+
     startEdit() {
       this.isEditing = true;
       this.originalUser = JSON.parse(JSON.stringify(this.user));
       console.log("Edit mode activated:", this.isEditing);
     },
+
     cancelEdit() {
       this.user = JSON.parse(JSON.stringify(this.originalUser));
       this.isEditing = false;
     },
-    async saveChanges() {
-      try {
-        const payload = {
-          username: this.user.username,
-          ...(this.user.realPassword && { password: this.user.realPassword })
-        };
-        const response = await this.$axios.put('/api/user/update', payload, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        });
 
-        if (response.data.code === 200) {
-          this.$message.success('修改成功');
-          this.originalUser = JSON.parse(JSON.stringify(this.user));
-          this.user.password = '********';
-          this.user.realPassword = '';
-          this.isEditing = false;
-          this.$emit('update-user', this.user.username);
+    async saveChanges() {
+
+      const profileData = {
+        password: this.user.password,
+        username: this.user.username,
+      };
+      
+      console.log(profileData)
+      console.log(JSON.stringify(profileData))
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/profile", {  
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(profileData),
+        });
+        
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          this.checkToken();
+          alert("Profile modification sucessful!");
         } else {
-          this.$message.error(response.data.msg || '修改失败');
+          alert("Fail to modify the profile: " + data.message);
         }
       } catch (error) {
-        console.error('保存失败:', error);
-        this.$message.error(`保存失败: ${error.response?.data?.message || error.message}`);
-        this.isEditing = true;
+        console.error("Request Error:", error);
+        alert("The profile modification request failed, please try again later!");
+      } finally {
+        this.isLoading = false;
       }
     }
   }
@@ -150,22 +164,21 @@ export default {
 </script>
 
 <style scoped>
-/* 新增间距样式 */
+
 .el-header {
-  margin-bottom: 20px;  /* 导航栏底部增加间距 */
+  margin-bottom: 20px;  
 }
 
 .main-content {
-  margin-top: 30px;     /* 主内容区域顶部增加间距 */
+  margin-top: 30px;     
 }
 
 .profile-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 30px 20px;   /* 增加容器内边距 */
+  padding: 30px 20px;  
 }
 
-/* 保持其他样式不变 */
 .user-card {
   border-radius: 12px;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
