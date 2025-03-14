@@ -13,7 +13,7 @@
         <form class="login-form" @submit.prevent="handleLogin">
 
           <div class="form-row">
-            <label for="email">Username</label>
+            <label for="email">Email</label>
             <input id="email" v-model="email" type="email" placeholder="Enter your email" required>
           </div>
 

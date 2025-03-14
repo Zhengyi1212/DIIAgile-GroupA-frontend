@@ -7,15 +7,15 @@
     <el-main>
       <div class="my-bookings-container">
         
-        <h1 class="page-title">My bookings</h1>
+        <h1 class="page-title">My Bookings</h1>
 
-      
+        <!-- Loading State -->
         <div v-if="loading" class="loading-state">
           <div class="loading-spinner"></div>
-          <p>loading...</p>
+          <p>Loading...</p>
         </div>
 
-      
+        <!-- Error State -->
         <div v-if="error" class="error-state">
           <span class="error-icon">⚠️</span>
           <p class="error-message">{{ error }}</p>
@@ -46,14 +46,14 @@
               <div class="info-item">
                 <span class="icon">🏢</span>
                 <div class="info-content">
-                  <span class="info-label">Block</span>
+                  <span class="info-label">Building</span>
                   <span class="info-value">{{ booking.building }}</span>
                 </div>
               </div>
 
               <div class="time-range">
                 <div class="time-block">
-                  <span class="time-label">Starting Time</span>
+                  <span class="time-label">Start Time</span>
                   <span class="time-value">{{ formatDateTime(booking.startTime) }}</span>
                 </div>
                 <div class="time-separator">→</div>
@@ -66,22 +66,21 @@
 
             <div class="card-footer">
               <button @click="handleCancel(booking.id)" class="cancel-button" :disabled="isPastBooking(booking.endTime)"
-                :title="isPastBooking(booking.endTime) ? '不可取消过期预定' : '点击取消预定'">
+                :title="isPastBooking(booking.endTime) ? 'Cannot cancel expired booking' : 'Click to cancel booking'">
                 <span class="button-icon">✖</span>
-                <span class="button-text">Cancle</span>
+                <span class="button-text">Cancel</span>
               </button>
             </div>
           </div>
         </transition-group>
 
-        <!-- 空状态 -->
+        <!-- Empty State -->
         <div v-else class="empty-state">
           <div class="empty-illustration">📅</div>
-          <h3 class="empty-title">No booking record</h3>
+          <h3 class="empty-title">No Booking Record</h3>
           <p class="empty-hint">Go and book a classroom now!</p>
         </div>
       </div>
-
     </el-main>
   </el-container>
 </template>
@@ -102,18 +101,18 @@ export default {
         {
           id: 1,
           room: 'A101',
-          campus: 'North campus',
+          campus: 'Xiaoxiang Campus',
           building: 'Block A',
-          startTime: '2025-03-09T11:00:00',
-          endTime: '2025-03-09T12:00:00',
+          startTime: '2025-03-14T14:00:00',
+          endTime: '2025-03-14T16:00:00',
         },
         {
           id: 2,
           room: 'B202',
-          campus: 'South campus',
+          campus: 'Xiaoxiang Campus',
           building: 'Block B',
-          startTime: '2025-03-10T14:00:00',
-          endTime: '2025-03-10T16:00:00',
+          startTime: '2025-03-15T16:00:00',
+          endTime: '2025-03-15T18:00:00',
         },
       ],
       loading: false,
@@ -129,7 +128,7 @@ export default {
     },
     parseToken(token) {
       try {
-        const base64Url = token.split(".")[1];  // JWT 结构为 header.payload.signature
+        const base64Url = token.split(".")[1];  
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
@@ -151,7 +150,7 @@ export default {
     },
     getStatusText(booking) {
       console.log('Current:', new Date(), 'EndTime:', new Date(booking.endTime));
-      return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
+      return this.isPastBooking(booking.endTime) ? 'Expired' : 'Active';
     },
     getStatusClass(booking) {
       return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
@@ -162,6 +161,7 @@ export default {
   }
 };
 </script>
+
 
 
 
