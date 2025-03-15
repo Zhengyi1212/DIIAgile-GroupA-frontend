@@ -9,49 +9,26 @@
         <!-- Filter Area -->
         <div class="filters-container">
           <div class="filter-group">
-            <label>Campus:</label>
-            <select v-model="selectedCampus" class="styled-select">
-              <option value="">All Campuses</option>
-              <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
-                {{ campus.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>Building:</label>
-            <select v-model="selectedBuilding" class="styled-select">
-              <option value="">All Buildings</option>
-              <option v-for="building in filteredBuildings" :key="building">
-                {{ building }}
-              </option>
-            </select>
-          </div>
-
-          <div class="filter-group">
             <label>Floor:</label>
             <select v-model="selectedFloor" class="styled-select">
               <option value="">All Floors</option>
-              <option v-for="floor in filteredFloors" :key="floor">
-                {{ floor }}
-              </option>
+              <option value="1st Floor">1st Floor</option>
+              <option value="6th Floor">6th Floor</option>
             </select>
           </div>
           <div class="filter-group">
-  <label>Min Capacity:</label>
-  <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
-</div>
-
-<div class="filter-group">
-  <label>Equipment:</label>
-  <select v-model="selectedEquipment" class="styled-select">
-    <option value="">Any</option>
-    <option v-for="equip in equipmentOptions" :key="equip">
-      {{ equip }}
-    </option>
-  </select>
-</div>
-
+            <label>Min Capacity:</label>
+            <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
+          </div>
+          <div class="filter-group">
+            <label>Equipment:</label>
+            <select v-model="selectedEquipment" class="styled-select">
+              <option value="">Any</option>
+              <option v-for="equip in equipmentOptions" :key="equip">
+                {{ equip }}
+              </option>
+            </select>
+          </div>
         </div>
 
         <!-- Date Selector -->
@@ -79,13 +56,12 @@
               <div class="card-body">
                 <div class="room-info">
                   <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
-                  <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
+                  <span class="info-item">📍 {{ room.floor }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
         <!-- Timetable -->
         <div v-if="selectedRoom" class="timetable-container">
           <h3 class="timetable-title">{{ selectedRoom.name }} Reservation Timetable</h3>
@@ -116,59 +92,19 @@ export default {
   data() {
     return {
       username: '',
-      role: '',
-      campuses: [
-        { id: '1', name: 'Xiaoxiang Campus' },
-        { id: '2', name: 'North Campus' }
-      ],
-      buildings: {
-        '1': ['Building A', 'Building B','Building C', 'Building D'],
-        '2': []
-      },
+      role: '', 
       rooms: [
-      { id: 'A101', name: 'A101', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'A102', name: 'A102', capacity: 40, building: 'Building A', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'A201', name: 'A201', capacity: 60, building: 'Building A', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'A202', name: 'A202', capacity: 55, building: 'Building A', floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'A301', name: 'A301', capacity: 70, building: 'Building A', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'A302', name: 'A302', capacity: 65, building: 'Building A', floor: '3rd Floor', equipment: 'Whiteboard' },
-    { id: 'A401', name: 'A401', capacity: 80, building: 'Building A', floor: '4th Floor', equipment: 'Projector' },
-    { id: 'A402', name: 'A402', capacity: 75, building: 'Building A', floor: '4th Floor', equipment: 'Computer' },
-
-    // Building B
-    { id: 'B101', name: 'B101', capacity: 50, building: 'Building B', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'B102', name: 'B102', capacity: 45, building: 'Building B', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'B201', name: 'B201', capacity: 60, building: 'Building B', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'B202', name: 'B202', capacity: 50, building: 'Building B', floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'B301', name: 'B301', capacity: 70, building: 'Building B', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'B302', name: 'B302', capacity: 65, building: 'Building B', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'B401', name: 'B401', capacity: 80, building: 'Building B', floor: '4th Floor', equipment: 'Computer' },
-    { id: 'B402', name: 'B402', capacity: 75, building: 'Building B', floor: '4th Floor', equipment: 'Whiteboard' },
-
-    // Building C
-    { id: 'C101', name: 'C101', capacity: 55, building: 'Building C', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'C102', name: 'C102', capacity: 50, building: 'Building C', floor: '1st Floor', equipment: 'Smartboard' },
-    { id: 'C201', name: 'C201', capacity: 65, building: 'Building C', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'C202', name: 'C202', capacity: 60, building: 'Building C', floor: '2nd Floor', equipment: 'Whiteboard' },
-    { id: 'C301', name: 'C301', capacity: 75, building: 'Building C', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'C302', name: 'C302', capacity: 70, building: 'Building C', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'C401', name: 'C401', capacity: 85, building: 'Building C', floor: '4th Floor', equipment: 'Computer' },
-    { id: 'C402', name: 'C402', capacity: 80, building: 'Building C', floor: '4th Floor', equipment: 'Whiteboard' },
-
-    // Building D
-    { id: 'D101', name: 'D101', capacity: 60, building: 'Building D', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'D102', name: 'D102', capacity: 55, building: 'Building D', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'D201', name: 'D201', capacity: 70, building: 'Building D', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'D202', name: 'D202', capacity: 65, building: 'Building D', floor: '2nd Floor', equipment: 'Smartboard' },
-    { id: 'D301', name: 'D301', capacity: 85, building: 'Building D', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'D302', name: 'D302', capacity: 80, building: 'Building D', floor: '3rd Floor', equipment: 'Computer' },
-    { id: 'D401', name: 'D401', capacity: 90, building: 'Building D', floor: '4th Floor', equipment: 'Smartboard' },
-    { id: 'D402', name: 'D402', capacity: 85, building: 'Building D', floor: '4th Floor', equipment: 'Whiteboard' }
+      { id: 'A101', name: 'A101', capacity: 50,  floor: '1st Floor', equipment: 'Projector' },
+    { id: 'A102', name: 'A102', capacity: 40, floor: '1st Floor', equipment: 'Whiteboard' },
+    { id: 'A201', name: 'A201', capacity: 60,  floor: '2nd Floor', equipment: 'Computer' },
+    { id: 'A202', name: 'A202', capacity: 55,  floor: '2nd Floor', equipment: 'Projector' },
+    { id: 'A301', name: 'A301', capacity: 70,  floor: '3rd Floor', equipment: 'Smartboard' },
+    { id: 'A302', name: 'A302', capacity: 65,  floor: '3rd Floor', equipment: 'Whiteboard' },
+    { id: 'A401', name: 'A401', capacity: 80,  floor: '4th Floor', equipment: 'Projector' },
+    { id: 'A402', name: 'A402', capacity: 75,  floor: '4th Floor', equipment: 'Computer' },
       ],
       currentPage: 1,
       roomsPerPage: 12,
-      selectedCampus: '',
-      selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
     selectedEquipment: '',
@@ -187,9 +123,6 @@ export default {
     // 生成唯一的设备选项
     return [...new Set(this.rooms.map(room => room.equipment))];
   },
-    filteredBuildings() {
-      return this.selectedCampus ? this.buildings[this.selectedCampus] || [] : [];
-    },
     filteredFloors() {
       const floors = new Set();
       this.rooms.forEach(room => {
