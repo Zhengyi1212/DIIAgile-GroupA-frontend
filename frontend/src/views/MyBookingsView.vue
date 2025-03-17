@@ -1,8 +1,7 @@
 <template>
   <el-container>
     <el-header>
-      <naviBarAndButton :username="username" :role="role">
-      </naviBarAndButton>
+      <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
     <el-main>
       <div class="my-bookings-container">
@@ -21,8 +20,8 @@
           <p class="error-message">{{ error }}</p>
         </div>
 
-        <transition-group v-if="bookings.length" name="booking-list" tag="div" class="booking-grid">
-          <div v-for="booking in bookings" :key="booking.id" class="booking-card"
+        <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
+          <div v-for="booking in paginatedBookings" :key="booking.id" class="booking-card"
             :class="{ 'past-booking': isPastBooking(booking.endTime), 'active-booking': !isPastBooking(booking.endTime) }">
             <div class="card-header">
               <h3 class="room-name">
@@ -46,7 +45,7 @@
               <div class="info-item">
                 <span class="icon">🏢</span>
                 <div class="info-content">
-                  <span class="info-label">Building</span>
+                  <span class="info-label">Block</span>
                   <span class="info-value">{{ booking.building }}</span>
                 </div>
               </div>
@@ -74,7 +73,7 @@
           </div>
         </transition-group>
 
-        <!-- Empty State -->
+        <!-- 空状态 -->
         <div v-else class="empty-state">
           <div class="empty-illustration">📅</div>
           <h3 class="empty-title">No Booking Record</h3>
@@ -101,23 +100,34 @@ export default {
         {
           id: 1,
           room: 'A101',
-          campus: 'Xiaoxiang Campus',
+          campus: 'North campus',
           building: 'Block A',
-          startTime: '2025-03-14T14:00:00',
-          endTime: '2025-03-14T16:00:00',
+          startTime: '2025-03-09T11:00:00',
+          endTime: '2025-03-09T12:00:00',
         },
         {
           id: 2,
           room: 'B202',
-          campus: 'Xiaoxiang Campus',
+          campus: 'South campus',
           building: 'Block B',
-          startTime: '2025-03-15T16:00:00',
-          endTime: '2025-03-15T18:00:00',
+          startTime: '2025-03-10T14:00:00',
+          endTime: '2025-03-10T16:00:00',
         },
       ],
+      currentPage: 1,
+      itemsPerPage: 5,
       loading: false,
       error: null
     };
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.bookings.length / this.itemsPerPage);
+    },
+    paginatedBookings() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.bookings.slice(start, start + this.itemsPerPage);
+    }
   },
   methods: {
     getInfor() {
@@ -154,6 +164,16 @@ export default {
     },
     getStatusClass(booking) {
       return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
     }
   },
   mounted() {
@@ -322,7 +342,25 @@ export default {
   background: #ff5252;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
-
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.pagination-controls button {
+  padding: 5px 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 .loading-state {
   text-align: center;
   padding: 4rem 0;
