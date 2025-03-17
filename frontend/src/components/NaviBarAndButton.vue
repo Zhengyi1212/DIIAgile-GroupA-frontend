@@ -14,6 +14,8 @@
 
 
                 <div class="profile-section" @mouseenter="showDropdown" @mouseleave="hideDropdown">
+                    <img v-if="role === 'admin'" 
+                     src="../assets/email-icon.jpg" alt="Email" class="email-icon" @click="redirectToEmail" />
                     <img src="../assets/avatar.png" alt="Profile" class="profile-avatar" @click="toggleDropdown" />
                     <transition name="fade">
                         <div v-if="dropdownVisible" class="dropdown-menu">
@@ -48,6 +50,10 @@ export default {
     },
 
     methods: {
+        redirectToEmail(){
+            this.$router.push('/email');
+        },
+
         toggleDropdown() {
             this.dropdownVisible = !this.dropdownVisible;
         },
@@ -269,4 +275,25 @@ export default {
 .nav-button:hover {
     background-color: #0056b3;
 }
+
+.email-icon {
+  width: 40px;
+  height: 30px;
+  margin-right: 15px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.email-icon:hover {
+  opacity: 0.8;
+}
+
+.profile-section {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-left: auto;
+  margin-right: 2.5rem;
+}
+
 </style>
