@@ -31,7 +31,7 @@
 
             <el-form-item label="Password:">
               <span v-if="!isEditing">
-                {{ showPassword ? user.realPassword : '********' }}
+                {{ '********' }}
               </span>
               <el-input
                 v-else
@@ -40,8 +40,8 @@
                 type="password"
                 show-password
                 clearable
-              />
-            </el-form-item>
+                />
+              </el-form-item>
 
             <el-form-item label="Role:">
               <el-tag type="info">{{ user.role }}</el-tag>
@@ -123,43 +123,35 @@ export default {
     },
 
     async saveChanges() {
-
-      const profileData = {
-        email : this.user.email,
-        password: this.user.password,
-        username: this.user.username,
-      };
-
-      console.log(profileData)
-      console.log(JSON.stringify(profileData))
-
-      try {
-        const response = await fetch("http://127.0.0.1:5000/profile", {  
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          
-          body: JSON.stringify(profileData),
-        });
-        
-        const data = await response.json();
-        console.log(data);
-
-        if (data.success) {
-          localStorage.setItem("token", data.token);
-          
-          alert("Profile modification sucessful!");
-        } else {
-          alert("Fail to modify the profile: " + data.message);
-        }
-      } catch (error) {
-        console.error("Request Error:", error);
-        alert("The profile modification request failed, please try again later!");
-      } finally {
-        this.isLoading = false;
-      }
+  const profileData = {
+    email: this.user.email,
+    password: this.user.realPassword || this.originalUser.realPassword, 
+    username: this.user.username,
+  };
+  
+  try {
+    const response = await fetch("http://127.0.0.1:5000/profile", {  
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(profileData),
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem("token", data.token);
+      alert("Profile modification successful!");
+    } else {
+      alert("Failed to modify the profile: " + data.message);
     }
+  } catch (error) {
+    console.error("Request Error:", error);
+    alert("The profile modification request failed, please try again later!");
+  } finally {
+    this.isLoading = false;
+  }
+}
     
   }
 };
