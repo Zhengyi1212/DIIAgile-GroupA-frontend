@@ -9,26 +9,49 @@
         <!-- Filter Area -->
         <div class="filters-container">
           <div class="filter-group">
-            <label>Floor:</label>
-            <select v-model="selectedFloor" class="styled-select">
-              <option value="">All Floors</option>
-              <option value="1st Floor">1st Floor</option>
-              <option value="6th Floor">6th Floor</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Min Capacity:</label>
-            <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
-          </div>
-          <div class="filter-group">
-            <label>Equipment:</label>
-            <select v-model="selectedEquipment" class="styled-select">
-              <option value="">Any</option>
-              <option v-for="equip in equipmentOptions" :key="equip">
-                {{ equip }}
+            <label>Campus:</label>
+            <select v-model="selectedCampus" class="styled-select">
+              <option value="">All Campuses</option>
+              <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
+                {{ campus.name }}
               </option>
             </select>
           </div>
+
+          <div class="filter-group">
+            <label>Building:</label>
+            <select v-model="selectedBuilding" class="styled-select">
+              <option value="">All Buildings</option>
+              <option v-for="building in filteredBuildings" :key="building">
+                {{ building }}
+              </option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label>Floor:</label>
+            <select v-model="selectedFloor" class="styled-select">
+              <option value="">All Floors</option>
+              <option v-for="floor in filteredFloors" :key="floor">
+                {{ floor }}
+              </option>
+            </select>
+          </div>
+          <div class="filter-group">
+  <label>Min Capacity:</label>
+  <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
+</div>
+
+<div class="filter-group">
+  <label>Equipment:</label>
+  <select v-model="selectedEquipment" class="styled-select">
+    <option value="">Any</option>
+    <option v-for="equip in equipmentOptions" :key="equip">
+      {{ equip }}
+    </option>
+  </select>
+</div>
+
         </div>
 
         <!-- Date Selector -->
@@ -56,12 +79,13 @@
               <div class="card-body">
                 <div class="room-info">
                   <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
-                  <span class="info-item">📍 {{ room.floor }}</span>
+                  <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <!-- Timetable -->
         <div v-if="selectedRoom" class="timetable-container">
           <h3 class="timetable-title">{{ selectedRoom.name }} Reservation Timetable</h3>
@@ -92,24 +116,37 @@ export default {
   data() {
     return {
       username: '',
-      role: '', 
+      role: '',
+      campuses: [
+        { id: '1', name: 'South Campus' },
+        { id: '2', name: 'North Campus' }
+      ],
+      buildings: {
+        '1': ['Building A', 'Building B'],
+        '2': ['Building C', 'Building D']
+      },
       rooms: [
-      { id: 'A101', name: 'A101', capacity: 50,  floor: '1st Floor', equipment: 'Projector' },
-    { id: 'A102', name: 'A102', capacity: 40, floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'A201', name: 'A201', capacity: 60,  floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'A202', name: 'A202', capacity: 55,  floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'A301', name: 'A301', capacity: 70,  floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'A302', name: 'A302', capacity: 65,  floor: '3rd Floor', equipment: 'Whiteboard' },
-    { id: 'A401', name: 'A401', capacity: 80,  floor: '4th Floor', equipment: 'Projector' },
-    { id: 'A402', name: 'A402', capacity: 75,  floor: '4th Floor', equipment: 'Computer' },
+        { id: '101', name: 'A101', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '102', name: 'A102', capacity: 40, building: 'Building A', floor: '1st Floor', equipment: 'Whiteboard' },
+        { id: '103', name: 'A103', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '105', name: 'A105', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '106', name: 'A106', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '104', name: 'A104', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '107', name: 'A107', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '108', name: 'A108', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '109', name: 'A109', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '110', name: 'A110', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+        { id: '201', name: 'B201', capacity: 60, building: 'Building B', floor: '2nd Floor', equipment: 'Computer' }
       ],
       currentPage: 1,
       roomsPerPage: 12,
+      selectedCampus: '',
+      selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
     selectedEquipment: '',
       selectedRoom: null,
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
+      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-9:00'],
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0]
     };
@@ -123,6 +160,9 @@ export default {
     // 生成唯一的设备选项
     return [...new Set(this.rooms.map(room => room.equipment))];
   },
+    filteredBuildings() {
+      return this.selectedCampus ? this.buildings[this.selectedCampus] || [] : [];
+    },
     filteredFloors() {
       const floors = new Set();
       this.rooms.forEach(room => {
@@ -151,15 +191,13 @@ export default {
       return this.filteredRooms.slice(start, end);
     }
   },
-  
   methods: {
     getInfor() {
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
-      this.username = userInfo.username;
+      this.username = userInfo.user_id;
       this.role = userInfo.role;
     },
-
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
