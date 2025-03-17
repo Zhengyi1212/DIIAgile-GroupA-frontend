@@ -1,8 +1,7 @@
 <template>
   <el-container>
     <el-header>
-      <naviBarAndButton :username="username" :role="role">
-      </naviBarAndButton>
+      <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
     <el-main>
       <div class="my-bookings-container">
@@ -47,7 +46,7 @@
                 <span class="icon">🏢</span>
                 <div class="info-content">
                   <span class="info-label">Building</span>
-                  <span class="info-value">{{ booking.building }}</span>
+                  <span class="info-value">{{ booking.building }}</span> <!-- Adding Building Information -->
                 </div>
               </div>
 
@@ -109,7 +108,7 @@ export default {
           id: 1,
           room: 'A101',
           campus: 'Xiaoxiang Campus',
-          building: 'Block A',
+          building: 'Block A',  // Adding Building Property
           startTime: '2025-03-14T14:00:00',
           endTime: '2025-03-14T16:00:00',
         },
@@ -117,7 +116,7 @@ export default {
           id: 2,
           room: 'B202',
           campus: 'Xiaoxiang Campus',
-          building: 'Block B',
+          building: 'Block B',  // Adding Building Property
           startTime: '2025-03-15T16:00:00',
           endTime: '2025-03-15T18:00:00',
         },

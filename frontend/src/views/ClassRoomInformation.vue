@@ -39,24 +39,24 @@
           </button>
         </div>
 
+        <!-- Classroom List -->
         <div class="content-container">
-          <!-- Classroom List -->
           <div class="pagination-controls">
             <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
             <span>Page {{ currentPage }} / {{ totalPages }}</span>
             <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
           </div>
           <div class="classroom-grid">
-            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card"
-              :class="{ selected: selectedRoom?.id === room.id }" @click="selectRoom(room)">
+            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card" @click="selectRoom(room)">
               <div class="card-header">
                 <h3 class="room-name">{{ room.name }}</h3>
                 <span class="capacity-badge">{{ room.capacity }} people</span>
               </div>
               <div class="card-body">
                 <div class="room-info">
-                  <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
+                  <span class="info-item">🏢 {{ room.building }}</span>
                   <span class="info-item">📍 {{ room.floor }}</span>
+                  <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
                 </div>
               </div>
             </div>
@@ -92,29 +92,28 @@ export default {
   data() {
     return {
       username: '',
-      role: '', 
-      rooms: [
-      { id: 'A101', name: 'A101', capacity: 50,  floor: '1st Floor', equipment: 'Projector' },
-    { id: 'A102', name: 'A102', capacity: 40, floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'A201', name: 'A201', capacity: 60,  floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'A202', name: 'A202', capacity: 55,  floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'A301', name: 'A301', capacity: 70,  floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'A302', name: 'A302', capacity: 65,  floor: '3rd Floor', equipment: 'Whiteboard' },
-    { id: 'A401', name: 'A401', capacity: 80,  floor: '4th Floor', equipment: 'Projector' },
-    { id: 'A402', name: 'A402', capacity: 75,  floor: '4th Floor', equipment: 'Computer' },
-      ],
-      currentPage: 1,
-      roomsPerPage: 12,
+      role: '',
+      selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
-    selectedEquipment: '',
+      selectedEquipment: '',
+      currentPage: 1,
+      roomsPerPage: 12,
+      rooms: [
+        { id: 'A101', name: 'A207', building: 'Building A', capacity: 50, floor: '1st Floor', equipment: 'Projector' },
+        { id: 'A102', name: 'A206', building: 'Building A', capacity: 40, floor: '1st Floor', equipment: 'Whiteboard' },
+        { id: 'B201', name: 'A310', building: 'Building A', capacity: 60, floor: '2nd Floor', equipment: 'Computer' },
+        { id: 'B202', name: 'A410', building: 'Building A', capacity: 55, floor: '2nd Floor', equipment: 'Projector' },
+        { id: 'C301', name: '635', building: 'Foreign Language Network Building', capacity: 70, floor: '3rd Floor', equipment: 'Smartboard' },
+        { id: 'C302', name: '610', building: 'Foreign Language Network Building', capacity: 65, floor: '3rd Floor', equipment: 'Whiteboard' },
+      ],
       selectedRoom: null,
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
-      bookedSlots: {},
-      selectedDate: new Date().toISOString().split('T')[0]
     };
   },
   computed: {
+    buildingOptions() {
+      return [...new Set(this.rooms.map(room => room.building))];
+    },
     capacityOptions() {
     // 生成唯一的容量选项
     return [...new Set(this.rooms.map(room => room.capacity))].sort((a, b) => a - b);
