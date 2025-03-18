@@ -140,7 +140,6 @@ export default {
         return null;
       }
     },
-<<<<<<< HEAD
     async getBookings(email) {
       this.loading = true;
       try {
@@ -156,9 +155,6 @@ export default {
         this.loading = false;
       }
     },
-=======
-
->>>>>>> 42a1f561cc449723d4211ccf61aaae5b4d9defb3
     isPastBooking(endTime) {
       const endDate = new Date(endTime);
       const now = new Date();
@@ -204,12 +200,6 @@ export default {
       }
 
     },
-
-
-
-
-
-
 
     formatDateTime(datetime) {
       const date = new Date(datetime);
