@@ -101,6 +101,7 @@ export default {
   },
   data() {
     return {
+     
       username: '',
       role: '',
       bookings: [
@@ -143,6 +144,7 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
@@ -153,25 +155,73 @@ export default {
         return null;
       }
     },
+
     isPastBooking(endTime) {
       const endDate = new Date(endTime);
       const now = new Date();
       return endDate.getTime() < now.getTime();
     },
+
     handleCancel(id) {
       this.bookings = this.bookings.filter(booking => booking.id !== id);
     },
+    
+    async getBookingsInformation() {
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      const bookingData = {
+        email : userInfo.email,
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mybookings", {  
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(bookingData),
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          this.checkToken();
+          alert("Login successful");
+        } else {
+          alert("Login Failure: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("The login request failed, please try again later!");
+      } finally {
+        this.isLoading = false;
+      }
+
+    },
+
+
+
+
+
+
+
     formatDateTime(datetime) {
       const date = new Date(datetime);
       return date.toLocaleString();
     },
+
     getStatusText(booking) {
       console.log('Current:', new Date(), 'EndTime:', new Date(booking.endTime));
       return this.isPastBooking(booking.endTime) ? 'Expired' : 'Active';
     },
+
     getStatusClass(booking) {
       return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
     },
+
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
