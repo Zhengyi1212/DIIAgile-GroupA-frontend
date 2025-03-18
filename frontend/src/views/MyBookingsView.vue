@@ -102,6 +102,7 @@ export default {
   },
   data() {
     return {
+     
       username: '',
       role: '',
       bookings: [],
@@ -128,6 +129,7 @@ export default {
       this.role = userInfo.role;
       this.getBookings(userInfo.email);  // 获取用户的预订数据
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
@@ -138,6 +140,7 @@ export default {
         return null;
       }
     },
+<<<<<<< HEAD
     async getBookings(email) {
       this.loading = true;
       try {
@@ -153,24 +156,74 @@ export default {
         this.loading = false;
       }
     },
+=======
+
+>>>>>>> 42a1f561cc449723d4211ccf61aaae5b4d9defb3
     isPastBooking(endTime) {
       const endDate = new Date(endTime);
       const now = new Date();
       return endDate.getTime() < now.getTime();
     },
+
     handleCancel(id) {
       this.bookings = this.bookings.filter(booking => booking.booking_id !== id);
     },
+    
+    async getBookingsInformation() {
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      const bookingData = {
+        email : userInfo.email,
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mybookings", {  
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(bookingData),
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          this.checkToken();
+          alert("Login successful");
+        } else {
+          alert("Login Failure: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("The login request failed, please try again later!");
+      } finally {
+        this.isLoading = false;
+      }
+
+    },
+
+
+
+
+
+
+
     formatDateTime(datetime) {
       const date = new Date(datetime);
       return date.toLocaleString();
     },
+
     getStatusText(booking) {
       return this.isPastBooking(booking.endTime) ? '过期' : '有效';
     },
+
     getStatusClass(booking) {
       return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
     },
+
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;

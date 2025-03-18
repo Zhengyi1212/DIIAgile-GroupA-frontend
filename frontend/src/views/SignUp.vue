@@ -199,8 +199,6 @@
             }
           })
 
-
-
           .catch((error) => {
             console.error("Registration request failed:", error);
             alert("Sign up request failed. Please try again later!");

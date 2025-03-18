@@ -3,6 +3,8 @@
     <el-header>
       <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
+
+
     <el-main>
       <main class="main-content">
         <!-- 过滤区域 -->
@@ -106,7 +108,7 @@ export default {
       selectedRoom: null,
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0],
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '19:00-21:00'],
+      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '19:00-21:00']
     };
   },
   computed: {
@@ -143,6 +145,7 @@ export default {
       return this.filteredRooms.slice(start, start + this.roomsPerPage);
     }
   },
+  
   methods: {
     getFormattedDate(offset) {
       const date = new Date();
@@ -679,6 +682,7 @@ export default {
   margin-top: 100px !important;
   /* 让弹窗往下移动 */
 }
+
 
 ::v-deep(.el-message-box) {
   border-radius: 10px;
