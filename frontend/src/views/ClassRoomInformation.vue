@@ -1,45 +1,30 @@
 <template>
   <el-container>
     <el-header>
-      <naviBarAndButton :username="username" :role="role">
-      </naviBarAndButton>
+      <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
 
 
     <el-main>
       <main class="main-content">
-        <!-- Filter Area -->
+        <!-- 过滤区域 -->
         <div class="filters-container">
-          <div class="filter-group">
-            <label>Campus:</label>
-            <select v-model="selectedCampus" class="styled-select">
-              <option value="">All Campuses</option>
-              <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
-                {{ campus.name }}
-              </option>
-            </select>
-          </div>
-
           <div class="filter-group">
             <label>Building:</label>
             <select v-model="selectedBuilding" class="styled-select">
               <option value="">All Buildings</option>
-              <option v-for="building in filteredBuildings" :key="building">
-                {{ building }}
-              </option>
+              <option v-for="building in buildingOptions" :key="building">{{ building }}</option>
             </select>
           </div>
-
           <div class="filter-group">
             <label>Floor:</label>
             <select v-model="selectedFloor" class="styled-select">
               <option value="">All Floors</option>
-              <option v-for="floor in filteredFloors" :key="floor">
-                {{ floor }}
-              </option>
+              <option v-for="floor in filteredFloors" :key="floor">{{ floor }}</option>
             </select>
           </div>
           <div class="filter-group">
+<<<<<<< HEAD
 
   <label>Min Capacity:</label>
   <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
@@ -59,6 +44,21 @@
 
         </div>
         <!-- Date Selector -->
+=======
+            <label>Min Capacity:</label>
+            <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
+          </div>
+          <div class="filter-group">
+            <label>Equipment:</label>
+            <select v-model="selectedEquipment" class="styled-select">
+              <option value="">Any</option>
+              <option v-for="equip in equipmentOptions" :key="equip">{{ equip }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 日期选择 -->
+>>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
         <div class="date-selector">
           <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
             :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
@@ -66,31 +66,31 @@
           </button>
         </div>
 
+        <!-- 教室列表 -->
         <div class="content-container">
-          <!-- Classroom List -->
           <div class="pagination-controls">
             <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
             <span>Page {{ currentPage }} / {{ totalPages }}</span>
             <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
           </div>
           <div class="classroom-grid">
-            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card"
-              :class="{ selected: selectedRoom?.id === room.id }" @click="selectRoom(room)">
+            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card" @click="selectRoom(room)">
               <div class="card-header">
                 <h3 class="room-name">{{ room.name }}</h3>
                 <span class="capacity-badge">{{ room.capacity }} people</span>
               </div>
               <div class="card-body">
                 <div class="room-info">
+                  <span class="info-item">🏢 {{ room.building }}</span>
+                  <span class="info-item">📍 {{ room.floor }}</span>
                   <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
-                  <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Timetable -->
+        <!-- 时间表 -->
         <div v-if="selectedRoom" class="timetable-container">
           <h3 class="timetable-title">{{ selectedRoom.name }} Reservation Timetable</h3>
           <div class="time-grid">
@@ -108,10 +108,9 @@
   </el-container>
 </template>
 
-
 <script>
 import NaviBarAndButton from '@/components/NaviBarAndButton.vue';
-
+import { ElMessageBox, ElMessage } from "element-plus";
 export default {
   name: 'ClassRoomInformation',
   components: {
@@ -119,6 +118,7 @@ export default {
   },
   data() {
     return {
+<<<<<<< HEAD
       username: '',
       role: '',
       campuses: [
@@ -172,59 +172,70 @@ export default {
       currentPage: 1,
       roomsPerPage: 12,
       selectedCampus: '',
+=======
+      username: 'TestUser',
+      role: 'student',
+>>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
       selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
-    selectedEquipment: '',
+      selectedEquipment: '',
+      currentPage: 1,
+      roomsPerPage: 12,
+      rooms: [],
       selectedRoom: null,
+<<<<<<< HEAD
       timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
+=======
+>>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
       bookedSlots: {},
-      selectedDate: new Date().toISOString().split('T')[0]
+      selectedDate: new Date().toISOString().split('T')[0],
+      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '19:00-21:00'],
     };
   },
   computed: {
-    capacityOptions() {
-    // 生成唯一的容量选项
-    return [...new Set(this.rooms.map(room => room.capacity))].sort((a, b) => a - b);
-  },
-  equipmentOptions() {
-    // 生成唯一的设备选项
-    return [...new Set(this.rooms.map(room => room.equipment))];
-  },
-    filteredBuildings() {
-      return this.selectedCampus ? this.buildings[this.selectedCampus] || [] : [];
+    buildingOptions() {
+      return [...new Set(this.rooms.map(room => room.building))];
     },
     filteredFloors() {
       const floors = new Set();
       this.rooms.forEach(room => {
-        if ((!this.selectedBuilding || room.building === this.selectedBuilding)) {
+        if (!this.selectedBuilding || room.building === this.selectedBuilding) {
           floors.add(room.floor);
         }
       });
       return Array.from(floors);
     },
+    equipmentOptions() {
+      return [...new Set(this.rooms.map(room => room.equipment))];
+    },
     filteredRooms() {
-    return this.rooms.filter(room => {
-      return (
-        (!this.selectedBuilding || room.building === this.selectedBuilding) &&
-        (!this.selectedFloor || room.floor === this.selectedFloor) &&
-        (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
-        (!this.selectedEquipment || room.equipment === this.selectedEquipment)
-      );
-    });
+      return this.rooms.filter(room => {
+        return (
+          (!this.selectedBuilding || room.building === this.selectedBuilding) &&
+          (!this.selectedFloor || room.floor === this.selectedFloor) &&
+          (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
+          (!this.selectedEquipment || room.equipment === this.selectedEquipment)
+        );
+      });
     },
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredRooms.length / this.roomsPerPage));
     },
     paginatedRooms() {
       const start = (this.currentPage - 1) * this.roomsPerPage;
-      const end = start + this.roomsPerPage;
-      return this.filteredRooms.slice(start, end);
+      return this.filteredRooms.slice(start, start + this.roomsPerPage);
     }
   },
   
   methods: {
+    getFormattedDate(offset) {
+    const date = new Date();
+    date.setDate(date.getDate() + offset);
+    return date.toISOString().split('T')[0];
+  },
     getInfor() {
+<<<<<<< HEAD
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
       this.username = userInfo.username;
@@ -240,53 +251,286 @@ export default {
         console.error("Token parsing error:", error);
         return null;
       }
+=======
+      this.username = "test_user";
+      this.role = "student";
     },
-    selectRoom(room) {
-      this.selectedRoom = room;
+    loadStaticRooms() {
+      this.rooms = [
+      { id: '107', name: '107', building: 'Foreign Building', capacity: 50, floor: '1st Floor', equipment: 'Projector' },
+      { id: '106', name: '108', building: 'Foreign Building', capacity: 50, floor: '1st Floor', equipment: 'Projector' },
+        { id: 'A207', name: 'A207', building: 'Building A', capacity: 50, floor: '2nd Floor', equipment: 'Projector' },
+        { id: 'A208', name: 'A208', building: 'Building A', capacity: 40, floor: '2nd Floor', equipment: 'Whiteboard' },
+        { id: 'A310', name: 'A310', building: 'Building A', capacity: 60, floor: '3rd Floor', equipment: 'Computer' },
+        { id: 'A410', name: 'A410', building: 'Building A', capacity: 55, floor: '3rd Floor', equipment: 'Projector' },
+        { id: '635', name: '635', building: 'Foreign Building', capacity: 70, floor: '6th Floor', equipment: 'Smartboard' },
+        { id: '610', name: '610', building: 'Foreign Building', capacity: 65, floor: '6th Floor', equipment: 'Whiteboard' }
+      ];
+>>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
+    },
+    loadStaticBookings() {
+      this.bookedSlots = {
+        "A101": {
+          "2025-03-20": ["08:00-10:00", "14:00-16:00"],
+          "2025-03-21": ["10:00-12:00"]
+        },
+        "A102": {
+          "2025-03-20": ["10:00-12:00"]
+        }
+      };
     },
     isSlotAvailable(slot) {
-      return !this.bookedSlots[this.selectedRoom?.id]?.[this.selectedDate]?.includes(slot);
-    },
-    bookSlot(slot) {
-      if (!this.selectedRoom) return;
-      if (!this.bookedSlots[this.selectedRoom.id]) {
-        this.bookedSlots[this.selectedRoom.id] = {};
+  if (!this.selectedRoom) return false;
+
+  // 将时间段转换为日期对象进行比较
+  const slotStartTime = new Date(`${this.selectedDate}T${slot.split('-')[0]}:00`);
+  const slotEndTime = new Date(`${this.selectedDate}T${slot.split('-')[1]}:00`);
+
+  // 检查该时间段是否与禁用的时间段重叠
+  if (this.selectedRoom.disabledTimes) {
+    for (const disableTime of this.selectedRoom.disabledTimes) {
+      // 判断禁用时间段是否与当前时间段有重叠
+      if (
+        (slotStartTime >= disableTime && slotStartTime < disableTime.getTime() + 2 * 60 * 60 * 1000) ||
+        (slotEndTime > disableTime && slotEndTime <= disableTime.getTime() + 2 * 60 * 60 * 1000)
+      ) {
+        return false; // 如果时间段与禁用时间段重叠，则不可预定
       }
-      if (!this.bookedSlots[this.selectedRoom.id][this.selectedDate]) {
-        this.bookedSlots[this.selectedRoom.id][this.selectedDate] = [];
+    }
+  }
+
+  // 检查该时间段是否已经被预定
+  return !(
+    this.bookedSlots[this.selectedRoom.id] &&
+    this.bookedSlots[this.selectedRoom.id][this.selectedDate] &&
+    this.bookedSlots[this.selectedRoom.id][this.selectedDate].includes(slot)
+  );
+},
+
+  bookSlot(slot) {
+  if (!this.selectedRoom) return;
+
+  if (this.role === "student") {
+    // Admin 角色，提供 "修改教室" 和 "预约" 两个选项
+    ElMessageBox({
+      title: "Admin Actions",
+      message: `You have selected <b>${this.selectedRoom.name}</b> on <b>${this.selectedDate}</b> at <b>${slot}</b>. 
+                <br/>Would you like to modify this room or proceed with booking?`,
+      dangerouslyUseHTMLString: true,
+      showCancelButton: true,
+      confirmButtonText: "Modify Room",
+      cancelButtonText: "Reserve",
+      customClass: "custom-message-box",
+    })
+      .then(() => {
+        // 选择 "Modify Room" 进入教室修改模式
+        this.modifyRoom();
+      })
+      .catch(() => {
+        // 选择 "Reserve" 进行预约
+        this.confirmBooking(slot);
+      });
+  } else {
+    // 普通用户，直接弹出预约确认
+    ElMessageBox.confirm(
+      `Do you want to book <b>${this.selectedRoom.name}</b> on <b>${this.selectedDate}</b> at <b>${slot}</b>?`,
+      "Confirm Booking",
+      {
+        dangerouslyUseHTMLString: true,
+        confirmButtonText: "Yes, Book it!",
+        cancelButtonText: "Cancel",
+        type: "info",
+        customClass: "custom-message-box",
+        center: true
       }
-      this.bookedSlots[this.selectedRoom.id][this.selectedDate].push(slot);
-    },
-    getFormattedDate(offset) {
-      const date = new Date();
-      date.setDate(date.getDate() + offset);
-      return date.toISOString().split('T')[0];
-    },
+    )
+      .then(() => {
+        this.confirmBooking(slot);
+      })
+      .catch(() => {
+        // 用户取消预约
+      });
+  }
+},
+
+confirmBooking(slot) {
+  if (!this.selectedRoom) return;
+
+  if (!this.bookedSlots[this.selectedRoom.id]) {
+    this.bookedSlots[this.selectedRoom.id] = {};
+  }
+  if (!this.bookedSlots[this.selectedRoom.id][this.selectedDate]) {
+    this.bookedSlots[this.selectedRoom.id][this.selectedDate] = [];
+  }
+
+  if (!this.isSlotAvailable(slot)) {
+    ElMessage({
+      message: "This slot is already booked.",
+      type: "warning",
+      duration: 2000,
+    });
+    return;
+  }
+
+  this.bookedSlots[this.selectedRoom.id][this.selectedDate].push(slot);
+
+  // 显示预约成功消息
+  ElMessage({
+    message: `Successfully booked <b>${this.selectedRoom.name}</b> on <b>${this.selectedDate}</b> at <b>${slot}</b>`,
+    type: "success",
+    dangerouslyUseHTMLString: true,
+    duration: 3000
+  });
+},
+
+modifyRoom() {
+  // 保存当前房间的信息，以便在点击取消时恢复
+  const originalRoom = { ...this.selectedRoom };
+
+  ElMessageBox({
+    title: "Modify Room Information",
+    message: `
+      <div>
+        <label>New Capacity:</label>
+        <input id="newCapacity" type="number" value="${this.selectedRoom.capacity}" placeholder="Enter new capacity" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+        <label style="margin-top: 10px; display: block;">New Equipment:</label>
+        <input id="newEquipment" type="text" value="${this.selectedRoom.equipment}" placeholder="Enter new equipment" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label style="margin-top: 10px;">Disable Bookings Between:</label>
+        <div>
+          <!-- 选择禁用的起始日期和时间 -->
+          <input id="disableStartDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableStartTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select Start Time</option>
+            <option value="08:00">08:00</option>
+            <option value="10:00">10:00</option>
+            <option value="14:00">14:00</option>
+            <option value="16:00">16:00</option>
+            <option value="19:00">19:00</option>
+          </select>
+          
+          <!-- 选择禁用的结束日期和时间 -->
+          <input id="disableEndDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableEndTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select End Time</option>
+            <option value="10:00">10:00</option>
+            <option value="12:00">12:00</option>
+            <option value="16:00">16:00</option>
+            <option value="18:00">18:00</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
+      </div>
+    `,
+    dangerouslyUseHTMLString: true,
+    showCancelButton: true,
+    confirmButtonText: "Save Changes",
+    cancelButtonText: "Cancel",
+    customClass: "custom-message-box",
+    beforeClose: (action, instance, done) => {
+      const newCapacity = document.getElementById("newCapacity") ? document.getElementById("newCapacity").value.trim() : '';
+      const newEquipment = document.getElementById("newEquipment") ? document.getElementById("newEquipment").value.trim() : '';
+      const disableStartDate = document.getElementById("disableStartDate") ? document.getElementById("disableStartDate").value : '';
+      const disableStartTime = document.getElementById("disableStartTime") ? document.getElementById("disableStartTime").value : '';
+      const disableEndDate = document.getElementById("disableEndDate") ? document.getElementById("disableEndDate").value : '';
+      const disableEndTime = document.getElementById("disableEndTime") ? document.getElementById("disableEndTime").value : '';
+
+      // 如果点击的是确认按钮（即保存更改）
+      if (action === "confirm") {
+        // 检查容量是否有效
+        if (newCapacity && !/^[1-9][0-9]*$/.test(newCapacity)) {
+          ElMessage({ type: "warning", message: "Capacity must be a positive number!" });
+          done(); // 确保弹窗关闭
+          return;
+        }
+
+        // 更新房间信息
+        if (newCapacity) {
+          this.selectedRoom.capacity = parseInt(newCapacity);
+        }
+        if (newEquipment) {
+          this.selectedRoom.equipment = newEquipment;
+        }
+
+        // 如果设置了“禁用预定时间”，更新房间的预定信息
+        if (disableStartDate && disableStartTime && disableEndDate && disableEndTime) {
+          const disableStartDateTime = new Date(`${disableStartDate}T${disableStartTime}:00`);
+          const disableEndDateTime = new Date(`${disableEndDate}T${disableEndTime}:00`);
+
+          if (!this.selectedRoom.disabledTimes) {
+            this.selectedRoom.disabledTimes = [];
+          }
+
+          // 禁用从选择的开始时间到结束时间的所有时间段
+          for (let currentDate = disableStartDateTime; currentDate <= disableEndDateTime; currentDate.setHours(currentDate.getHours() + 2)) {
+            this.selectedRoom.disabledTimes.push(new Date(currentDate));
+          }
+
+          ElMessage({ type: "success", message: `Bookings disabled from ${disableStartDateTime.toLocaleString()} to ${disableEndDateTime.toLocaleString()}.` });
+        }
+
+        ElMessage({ type: "success", message: "Room information updated successfully." });
+      } else {
+        // 如果点击了取消按钮，恢复原来的房间信息
+        this.selectedRoom = originalRoom;
+      }
+
+      // 确保无论点击什么按钮，done() 都被调用
+      done();
+    }
+  }).catch((error) => {
+    // 处理取消操作的拒绝情况
+    if (error === "cancel") {
+      console.log("用户取消了操作。");
+    } else {
+      console.error("意外错误: ", error);
+    }
+  });
+},
+
+
+
+modifyRoomEquipment() {
+  ElMessageBox.prompt(
+    "Modify Room Equipment",
+    "Enter new equipment details:",
+    {
+      confirmButtonText: "Save",
+      cancelButtonText: "Cancel",
+    }
+  )
+    .then(({ value }) => {
+      this.selectedRoom.equipment = value;
+      ElMessage({
+        type: "success",
+        message: `Room equipment updated to "${value}".`
+      });
+    })
+    .catch(() => {
+      ElMessage({
+        type: "info",
+        message: "Equipment modification canceled."
+      });
+    });
+},
+
+    selectRoom(room) {
+    this.selectedRoom = room;
+  },
     nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      } 
-    }, 
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
+      if (this.currentPage < this.totalPages) this.currentPage++;
     },
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
+    }
   },
   mounted() {
     this.getInfor();
-  },
-  watch: {
-    filteredRooms() {
-      this.currentPage = 1;
-    }
+    this.loadStaticRooms();
+    this.loadStaticBookings();
   }
 };
 </script>
-
-
-
-
 
 <style scoped>
 .el-main {
@@ -506,5 +750,25 @@ export default {
 .time-slot:hover {
   opacity: 0.8;
 }
+::v-deep(.custom-message-box) {
+  margin-top: 100px !important;  /* 让弹窗往下移动 */
+}
 
+<<<<<<< HEAD
+=======
+::v-deep(.el-message-box) {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+::v-deep(.el-message-box__title) {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+::v-deep(.el-message-box__content) {
+  font-size: 16px;
+}
+
+>>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
 </style>
