@@ -177,13 +177,33 @@ export default {
       };
     },
     isSlotAvailable(slot) {
-    if (!this.selectedRoom) return false;
-    return !(
-      this.bookedSlots[this.selectedRoom.id] &&
-      this.bookedSlots[this.selectedRoom.id][this.selectedDate] &&
-      this.bookedSlots[this.selectedRoom.id][this.selectedDate].includes(slot)
-    );
-  },
+  if (!this.selectedRoom) return false;
+
+  // 将时间段转换为日期对象进行比较
+  const slotStartTime = new Date(`${this.selectedDate}T${slot.split('-')[0]}:00`);
+  const slotEndTime = new Date(`${this.selectedDate}T${slot.split('-')[1]}:00`);
+
+  // 检查该时间段是否与禁用的时间段重叠
+  if (this.selectedRoom.disabledTimes) {
+    for (const disableTime of this.selectedRoom.disabledTimes) {
+      // 判断禁用时间段是否与当前时间段有重叠
+      if (
+        (slotStartTime >= disableTime && slotStartTime < disableTime.getTime() + 2 * 60 * 60 * 1000) ||
+        (slotEndTime > disableTime && slotEndTime <= disableTime.getTime() + 2 * 60 * 60 * 1000)
+      ) {
+        return false; // 如果时间段与禁用时间段重叠，则不可预定
+      }
+    }
+  }
+
+  // 检查该时间段是否已经被预定
+  return !(
+    this.bookedSlots[this.selectedRoom.id] &&
+    this.bookedSlots[this.selectedRoom.id][this.selectedDate] &&
+    this.bookedSlots[this.selectedRoom.id][this.selectedDate].includes(slot)
+  );
+},
+
   bookSlot(slot) {
   if (!this.selectedRoom) return;
 
@@ -272,6 +292,31 @@ modifyRoom() {
         <input id="newCapacity" type="number" value="${this.selectedRoom.capacity}" placeholder="Enter new capacity" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
         <label style="margin-top: 10px; display: block;">New Equipment:</label>
         <input id="newEquipment" type="text" value="${this.selectedRoom.equipment}" placeholder="Enter new equipment" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label style="margin-top: 10px;">Disable Bookings Between:</label>
+        <div>
+          <!-- 选择禁用的起始日期和时间 -->
+          <input id="disableStartDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableStartTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select Start Time</option>
+            <option value="08:00">08:00</option>
+            <option value="10:00">10:00</option>
+            <option value="14:00">14:00</option>
+            <option value="16:00">16:00</option>
+            <option value="19:00">19:00</option>
+          </select>
+          
+          <!-- 选择禁用的结束日期和时间 -->
+          <input id="disableEndDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableEndTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select End Time</option>
+            <option value="10:00">10:00</option>
+            <option value="12:00">12:00</option>
+            <option value="16:00">16:00</option>
+            <option value="18:00">18:00</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
       </div>
     `,
     dangerouslyUseHTMLString: true,
@@ -282,6 +327,10 @@ modifyRoom() {
     beforeClose: (action, instance, done) => {
       const newCapacity = document.getElementById("newCapacity") ? document.getElementById("newCapacity").value.trim() : '';
       const newEquipment = document.getElementById("newEquipment") ? document.getElementById("newEquipment").value.trim() : '';
+      const disableStartDate = document.getElementById("disableStartDate") ? document.getElementById("disableStartDate").value : '';
+      const disableStartTime = document.getElementById("disableStartTime") ? document.getElementById("disableStartTime").value : '';
+      const disableEndDate = document.getElementById("disableEndDate") ? document.getElementById("disableEndDate").value : '';
+      const disableEndTime = document.getElementById("disableEndTime") ? document.getElementById("disableEndTime").value : '';
 
       // 如果点击的是确认按钮（即保存更改）
       if (action === "confirm") {
@@ -298,6 +347,23 @@ modifyRoom() {
         }
         if (newEquipment) {
           this.selectedRoom.equipment = newEquipment;
+        }
+
+        // 如果设置了“禁用预定时间”，更新房间的预定信息
+        if (disableStartDate && disableStartTime && disableEndDate && disableEndTime) {
+          const disableStartDateTime = new Date(`${disableStartDate}T${disableStartTime}:00`);
+          const disableEndDateTime = new Date(`${disableEndDate}T${disableEndTime}:00`);
+
+          if (!this.selectedRoom.disabledTimes) {
+            this.selectedRoom.disabledTimes = [];
+          }
+
+          // 禁用从选择的开始时间到结束时间的所有时间段
+          for (let currentDate = disableStartDateTime; currentDate <= disableEndDateTime; currentDate.setHours(currentDate.getHours() + 2)) {
+            this.selectedRoom.disabledTimes.push(new Date(currentDate));
+          }
+
+          ElMessage({ type: "success", message: `Bookings disabled from ${disableStartDateTime.toLocaleString()} to ${disableEndDateTime.toLocaleString()}.` });
         }
 
         ElMessage({ type: "success", message: "Room information updated successfully." });
@@ -318,7 +384,6 @@ modifyRoom() {
     }
   });
 },
-
 
 
 

@@ -108,7 +108,7 @@ export default {
           id: 1,
           room: 'A101',
           campus: 'Xiaoxiang Campus',
-          building: 'Block A',  // Adding Building Property
+          building: 'Block A',
           startTime: '2025-03-14T14:00:00',
           endTime: '2025-03-14T16:00:00',
         },
@@ -116,7 +116,7 @@ export default {
           id: 2,
           room: 'B202',
           campus: 'Xiaoxiang Campus',
-          building: 'Block B',  // Adding Building Property
+          building: 'Block B',
           startTime: '2025-03-15T16:00:00',
           endTime: '2025-03-15T18:00:00',
         },
