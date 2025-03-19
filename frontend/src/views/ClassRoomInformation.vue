@@ -612,23 +612,25 @@ export default {
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   flex: 1;
-  max-width: 650px;
-  min-height: 100px;
+  max-width: 800px;
+  min-height: 150px;
   max-height: 200px;
   margin-top: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 40px;
+  padding-bottom: 20px;
   /* 保留两个时间卡牌的高度空间 */
 }
 
 .time-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  justify-content: center;
+  display: flex; /* 使用 flexbox 布局 */
+  gap: 10px; /* 设置时间卡片之间的间距 */
+  justify-content: center; /* 居中排列 */
+  flex-wrap: nowrap; /* 确保所有时间卡片在一行 */
+  overflow-x: auto; /* 添加水平滚动条（如果时间段过多） */
+  width: 100%;
 }
 
 .time-slot {
@@ -637,7 +639,7 @@ export default {
   text-align: center;
   cursor: pointer;
   transition: background 0.3s;
-  min-width: 120px;
+  min-width: 10px;
   font-size: 14px;
 }
 
