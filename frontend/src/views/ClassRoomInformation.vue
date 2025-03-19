@@ -24,7 +24,6 @@
             </select>
           </div>
           <div class="filter-group">
-<<<<<<< HEAD
 
   <label>Min Capacity:</label>
   <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
@@ -44,21 +43,6 @@
 
         </div>
         <!-- Date Selector -->
-=======
-            <label>Min Capacity:</label>
-            <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
-          </div>
-          <div class="filter-group">
-            <label>Equipment:</label>
-            <select v-model="selectedEquipment" class="styled-select">
-              <option value="">Any</option>
-              <option v-for="equip in equipmentOptions" :key="equip">{{ equip }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 日期选择 -->
->>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
         <div class="date-selector">
           <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
             :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
@@ -118,7 +102,6 @@ export default {
   },
   data() {
     return {
-<<<<<<< HEAD
       username: '',
       role: '',
       campuses: [
@@ -172,22 +155,13 @@ export default {
       currentPage: 1,
       roomsPerPage: 12,
       selectedCampus: '',
-=======
-      username: 'TestUser',
-      role: 'student',
->>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
       selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
       selectedEquipment: '',
-      currentPage: 1,
-      roomsPerPage: 12,
-      rooms: [],
+
       selectedRoom: null,
-<<<<<<< HEAD
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
-=======
->>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
+     
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0],
       timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '19:00-21:00'],
@@ -235,7 +209,6 @@ export default {
     return date.toISOString().split('T')[0];
   },
     getInfor() {
-<<<<<<< HEAD
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
       this.username = userInfo.username;
@@ -251,9 +224,7 @@ export default {
         console.error("Token parsing error:", error);
         return null;
       }
-=======
-      this.username = "test_user";
-      this.role = "student";
+      
     },
     loadStaticRooms() {
       this.rooms = [
@@ -266,8 +237,8 @@ export default {
         { id: '635', name: '635', building: 'Foreign Building', capacity: 70, floor: '6th Floor', equipment: 'Smartboard' },
         { id: '610', name: '610', building: 'Foreign Building', capacity: 65, floor: '6th Floor', equipment: 'Whiteboard' }
       ];
->>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
     },
+    
     loadStaticBookings() {
       this.bookedSlots = {
         "A101": {
@@ -754,21 +725,4 @@ modifyRoomEquipment() {
   margin-top: 100px !important;  /* 让弹窗往下移动 */
 }
 
-<<<<<<< HEAD
-=======
-::v-deep(.el-message-box) {
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-::v-deep(.el-message-box__title) {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-::v-deep(.el-message-box__content) {
-  font-size: 16px;
-}
-
->>>>>>> 9eafd85a59cbd574a269f9e7407185475f96bf94
 </style>
