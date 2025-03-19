@@ -6,27 +6,27 @@
     <el-main>
       <div class="my-bookings-container">
         
-        <h1 class="page-title">My Bookings</h1>
+        <h1 class="page-title">我的预订</h1>
 
-        <!-- Loading State -->
+        <!-- 加载状态 -->
         <div v-if="loading" class="loading-state">
           <div class="loading-spinner"></div>
-          <p>Loading...</p>
+          <p>加载中...</p>
         </div>
 
-        <!-- Error State -->
+        <!-- 错误状态 -->
         <div v-if="error" class="error-state">
           <span class="error-icon">⚠️</span>
           <p class="error-message">{{ error }}</p>
         </div>
 
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
-          <div v-for="booking in paginatedBookings" :key="booking.id" class="booking-card"
+          <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card"
             :class="{ 'past-booking': isPastBooking(booking.endTime), 'active-booking': !isPastBooking(booking.endTime) }">
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
-                {{ booking.room }}
+                {{ booking.classroom_details.classroom_name }}
               </h3>
               <span class="status-badge" :class="getStatusClass(booking)">
                 {{ getStatusText(booking) }}
@@ -37,47 +37,54 @@
               <div class="info-item">
                 <span class="icon">📍</span>
                 <div class="info-content">
-                  <span class="info-label">Campus</span>
-                  <span class="info-value">{{ booking.campus }}</span>
+                  <span class="info-label">楼宇</span>
+                  <span class="info-value">{{ booking.classroom_details.building }}</span>
                 </div>
               </div>
 
               <div class="info-item">
                 <span class="icon">🏢</span>
                 <div class="info-content">
-                  <span class="info-label">Block</span>
-                  <span class="info-value">{{ booking.building }}</span>
+                  <span class="info-label">楼层</span>
+                  <span class="info-value">{{ booking.classroom_details.floor }}</span>
                 </div>
               </div>
 
               <div class="time-range">
                 <div class="time-block">
-                  <span class="time-label">Start Time</span>
+                  <span class="time-label">开始时间</span>
                   <span class="time-value">{{ formatDateTime(booking.startTime) }}</span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
-                  <span class="time-label">End Time</span>
+                  <span class="time-label">结束时间</span>
                   <span class="time-value">{{ formatDateTime(booking.endTime) }}</span>
                 </div>
               </div>
             </div>
 
             <div class="card-footer">
-              <button @click="handleCancel(booking.id)" class="cancel-button" :disabled="isPastBooking(booking.endTime)"
-                :title="isPastBooking(booking.endTime) ? 'Cannot cancel expired booking' : 'Click to cancel booking'">
+              <button @click="handleCancel(booking.booking_id)" class="cancel-button" :disabled="isPastBooking(booking.endTime)"
+                :title="isPastBooking(booking.endTime) ? '不能取消过期的预订' : '点击取消预订'">
                 <span class="button-icon">✖</span>
-                <span class="button-text">Cancel</span>
+                <span class="button-text">取消</span>
               </button>
             </div>
           </div>
         </transition-group>
 
+        <!-- 分页控制 -->
+        <div v-if="bookings.length" class="pagination-controls">
+          <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+          <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+        </div>
+
         <!-- 空状态 -->
         <div v-else class="empty-state">
           <div class="empty-illustration">📅</div>
-          <h3 class="empty-title">No Booking Record</h3>
-          <p class="empty-hint">Go and book a classroom now!</p>
+          <h3 class="empty-title">没有预订记录</h3>
+          <p class="empty-hint">赶快去预订一个教室吧！</p>
         </div>
       </div>
     </el-main>
@@ -86,6 +93,7 @@
 
 <script>
 import NaviBarAndButton from '@/components/NaviBarAndButton.vue';
+import axios from 'axios';
 
 export default {
   name: 'MyBookings',
@@ -94,26 +102,10 @@ export default {
   },
   data() {
     return {
+     
       username: '',
       role: '',
-      bookings: [
-        {
-          id: 1,
-          room: 'A101',
-          campus: 'North campus',
-          building: 'Block A',
-          startTime: '2025-03-09T11:00:00',
-          endTime: '2025-03-09T12:00:00',
-        },
-        {
-          id: 2,
-          room: 'B202',
-          campus: 'South campus',
-          building: 'Block B',
-          startTime: '2025-03-10T14:00:00',
-          endTime: '2025-03-10T16:00:00',
-        },
-      ],
+      bookings: [],
       currentPage: 1,
       itemsPerPage: 5,
       loading: false,
@@ -135,15 +127,32 @@ export default {
       const userInfo = this.parseToken(token);
       this.username = userInfo.username;
       this.role = userInfo.role;
+      this.getBookings(userInfo.email);  // 获取用户的预订数据
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
-        console.error("Token parsing error:", error);
+        console.error("Token解析错误:", error);
         return null;
+      }
+    },
+    async getBookings(email) {
+      this.loading = true;
+      try {
+        const response = await axios.post('http://your-backend-api-url/mybookings', { email });
+        if (response.data.success === false) {
+          this.error = response.data.message;
+        } else {
+          this.bookings = response.data.bookings;
+        }
+      } catch (error) {
+        this.error = "加载预订数据失败，请重试。";
+      } finally {
+        this.loading = false;
       }
     },
     isPastBooking(endTime) {
@@ -151,20 +160,60 @@ export default {
       const now = new Date();
       return endDate.getTime() < now.getTime();
     },
+
     handleCancel(id) {
-      this.bookings = this.bookings.filter(booking => booking.id !== id);
+      this.bookings = this.bookings.filter(booking => booking.booking_id !== id);
     },
+    
+    async getBookingsInformation() {
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      const bookingData = {
+        email : userInfo.email,
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mybookings", {  
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          
+          body: JSON.stringify(bookingData),
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          this.checkToken();
+          alert("Login successful");
+        } else {
+          alert("Login Failure: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("The login request failed, please try again later!");
+      } finally {
+        this.isLoading = false;
+      }
+
+    },
+
     formatDateTime(datetime) {
       const date = new Date(datetime);
       return date.toLocaleString();
     },
+
     getStatusText(booking) {
-      console.log('Current:', new Date(), 'EndTime:', new Date(booking.endTime));
-      return this.isPastBooking(booking.endTime) ? 'Expired' : 'Active';
+      return this.isPastBooking(booking.endTime) ? '过期' : '有效';
     },
+
     getStatusClass(booking) {
       return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
     },
+
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
@@ -181,8 +230,6 @@ export default {
   }
 };
 </script>
-
-
 
 
 <style scoped>

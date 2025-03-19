@@ -34,7 +34,13 @@ const routes = [
     {
         path: '/classrooms',
         component: ClassRoomInformation
-    }
+    },
+    {
+        path: '/email',
+        name: 'Email',
+        component: () => import('../views/EmailView.vue'),
+        meta: { requiresAuth: true, requiredRole: 'admin' }
+      }
 ];
 
 const router = createRouter({

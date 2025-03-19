@@ -6,6 +6,7 @@
                     <img src="../assets/dii-logo.png" alt="Project Icon" class="brand-logo" />
                     <h1 class="brand-title">DIICSU Room Book System</h1>
                 </div>
+                
                 <div class="button-section">
                     <button @click="redirectToHome" class="nav-button">Home</button>
                     <button @click="redirectToClassrooms" class="nav-button">Classroom Information</button>
