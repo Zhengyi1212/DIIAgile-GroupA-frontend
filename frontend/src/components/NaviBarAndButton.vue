@@ -11,6 +11,7 @@
                     <button @click="redirectToHome" class="nav-button">Home</button>
                     <button @click="redirectToClassrooms" class="nav-button">Classroom Information</button>
                     <button @click="redirectToMyBookings" class="nav-button">My Bookings</button>
+                    <button @click="downloadLog" class="nav-button">Download Log</button> <!-- 添加的按钮 -->
                 </div>
 
 
@@ -107,6 +108,10 @@ export default {
                 }
             }
             );
+        },
+        downloadLog() {
+            // 直接访问 Flask 后端的日志导出接口
+            window.location.href = "http://localhost:5000/export_logs";
         },
 
 

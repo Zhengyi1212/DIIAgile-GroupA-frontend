@@ -6,6 +6,8 @@
           <img src="../assets/dii-logo.png" alt="Project Icon" class="brand-logo" />
           <h1 class="brand-title">DIICSU Room Book System</h1>
         </div>
+        
+
 
         <div class="profile-section" @mouseenter="showDropdown" @mouseleave="hideDropdown">
           <img src="../assets/avatar.png" alt="Profile" class="profile-avatar" @click="toggleDropdown" />
