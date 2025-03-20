@@ -8,79 +8,56 @@
         
         <h1 class="page-title">My Bookings</h1>
 
-        <!-- Loading State -->
         <div v-if="loading" class="loading-state">
           <div class="loading-spinner"></div>
           <p>Loading...</p>
         </div>
 
-        <!-- Error State -->
         <div v-if="error" class="error-state">
           <span class="error-icon">⚠️</span>
           <p class="error-message">{{ error }}</p>
         </div>
 
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
-          <div v-for="booking in paginatedBookings" :key="booking.id" class="booking-card"
-            :class="{ 'past-booking': isPastBooking(booking.endTime), 'active-booking': !isPastBooking(booking.endTime) }">
+          <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card"
+            :class="{ 'past-booking': isPastBooking(booking.classroom_details.start_time), 'active-booking': !isPastBooking(booking.classroom_details.start_time) }">
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
-                {{ booking.room }}
+                {{ booking.classroom_details.classroom_name }}
               </h3>
-              <span class="status-badge" :class="getStatusClass(booking)">
-                {{ getStatusText(booking) }}
-              </span>
             </div>
 
             <div class="card-body">
               <div class="info-item">
-                <span class="icon">📍</span>
-                <div class="info-content">
-                  <span class="info-label">Campus</span>
-                  <span class="info-value">{{ booking.campus }}</span>
-                </div>
-              </div>
-
-              <div class="info-item">
                 <span class="icon">🏢</span>
                 <div class="info-content">
                   <span class="info-label">Building</span>
-                  <span class="info-value">{{ booking.building }}</span> <!-- Adding Building Information -->
+                  <span class="info-value">{{ booking.classroom_details.building }}</span>
                 </div>
               </div>
 
               <div class="time-range">
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
-                  <span class="time-value">{{ formatDateTime(booking.startTime) }}</span>
+                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time)) }}</span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
                   <span class="time-label">End Time</span>
-                  <span class="time-value">{{ formatDateTime(booking.endTime) }}</span>
+                  <span class="time-value">{{ formatDateTime(getEndTime(booking.classroom_details.start_time)) }}</span>
                 </div>
               </div>
-            </div>
-
-            <div class="card-footer">
-              <button @click="handleCancel(booking.id)" class="cancel-button" :disabled="isPastBooking(booking.endTime)"
-                :title="isPastBooking(booking.endTime) ? 'Cannot cancel expired booking' : 'Click to cancel booking'">
-                <span class="button-icon">✖</span>
-                <span class="button-text">Cancel</span>
-              </button>
             </div>
           </div>
         </transition-group>
 
-        <!-- Pagination Controls -->
         <div v-if="bookings.length" class="pagination-controls">
           <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
           <span>Page {{ currentPage }} of {{ totalPages }}</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
         </div>
 
-        <!-- Empty State -->
         <div v-else class="empty-state">
           <div class="empty-illustration">📅</div>
           <h3 class="empty-title">No Booking Record</h3>
@@ -101,27 +78,9 @@ export default {
   },
   data() {
     return {
-     
       username: '',
       role: '',
-      bookings: [
-        {
-          id: 1,
-          room: 'A101',
-          campus: 'Xiaoxiang Campus',
-          building: 'Block A',
-          startTime: '2025-03-14T14:00:00',
-          endTime: '2025-03-14T16:00:00',
-        },
-        {
-          id: 2,
-          room: 'B202',
-          campus: 'Xiaoxiang Campus',
-          building: 'Block B',
-          startTime: '2025-03-15T16:00:00',
-          endTime: '2025-03-15T18:00:00',
-        },
-      ],
+      bookings: [],
       currentPage: 1,
       itemsPerPage: 5,
       loading: false,
@@ -156,72 +115,60 @@ export default {
       }
     },
 
-    isPastBooking(endTime) {
-      const endDate = new Date(endTime);
-      const now = new Date();
-      return endDate.getTime() < now.getTime();
+    isPastBooking(start_time) {
+      if (!start_time) return true;
+      const startDate = new Date(start_time);
+      return startDate.getTime() < Date.now();
+    },
+    getCorrectTime(startTime) {
+      if (!startTime) return new Date();
+      const start = new Date(startTime);
+      start.setHours(start.getHours() -8);
+      return start;
     },
 
-    handleCancel(id) {
-      this.bookings = this.bookings.filter(booking => booking.id !== id);
+    getEndTime(startTime) {
+      if (!startTime) return new Date();
+      const start = new Date(startTime);
+      start.setHours(start.getHours() -6);
+      return start;
     },
     
     async getBookingsInformation() {
+      this.loading = true;
+      this.error = null;
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
-      const bookingData = {
-        email : userInfo.email,
+      if (!userInfo) {
+        this.error = "Invalid token. Please log in again.";
+        this.loading = false;
+        return;
       }
-
+      
       try {
-        const response = await fetch("http://127.0.0.1:5000/mybookings", {  
+        const response = await fetch("http://127.0.0.1:5000/mybookings", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          
-          body: JSON.stringify(bookingData),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userInfo.email })
         });
-
+        
         const data = await response.json();
-        console.log(data);
-
-        if (data.success) {
-          localStorage.setItem("token", data.token);
-          this.checkToken();
-          alert("Login successful");
+        if (response.ok) {
+          this.bookings = data.bookings;
         } else {
-          alert("Login Failure: " + data.message);
+          this.error = data.message || "Failed to fetch bookings.";
         }
       } catch (error) {
-        console.error("Request Error:", error);
-        alert("The login request failed, please try again later!");
+        this.error = "Request failed. Please try again later.";
       } finally {
-        this.isLoading = false;
+        this.loading = false;
       }
-
     },
-
-
-
-
-
-
 
     formatDateTime(datetime) {
-      const date = new Date(datetime);
-      return date.toLocaleString();
+      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
     },
-
-    getStatusText(booking) {
-      console.log('Current:', new Date(), 'EndTime:', new Date(booking.endTime));
-      return this.isPastBooking(booking.endTime) ? 'Expired' : 'Active';
-    },
-
-    getStatusClass(booking) {
-      return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
-    },
-
+    
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
@@ -235,9 +182,11 @@ export default {
   },
   mounted() {
     this.getInfor();
+    this.getBookingsInformation();
   }
 };
 </script>
+
 
 
 
