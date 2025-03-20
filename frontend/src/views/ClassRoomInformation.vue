@@ -24,6 +24,7 @@
             </select>
           </div>
           <div class="filter-group">
+<<<<<<< HEAD
             <label>Min Capacity:</label>
             <input v-model.number="selectedCapacity" type="number" class="styled-input"
               placeholder="Enter min capacity">
@@ -38,6 +39,27 @@
         </div>
 
         <!-- 日期选择 -->
+=======
+
+  <label>Min Capacity:</label>
+  <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
+</div>
+
+
+
+<div class="filter-group">
+  <label>Equipment:</label>
+  <select v-model="selectedEquipment" class="styled-select">
+    <option value="">Any</option>
+    <option v-for="equip in equipmentOptions" :key="equip">
+      {{ equip }}
+    </option>
+  </select>
+</div>
+
+        </div>
+        <!-- Date Selector -->
+>>>>>>> 2d653a9c216858a2c7a5038f62d578d8b32c9a41
         <div class="date-selector">
           <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
             :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
@@ -102,16 +124,74 @@ export default {
   },
   data() {
     return {
+<<<<<<< HEAD
       username: 'TestUser',
       role: 'test',
+=======
+      username: '',
+      role: '',
+      campuses: [
+        { id: '1', name: 'Xiaoxiang Campus' },
+        { id: '2', name: 'North Campus' }
+      ],
+      buildings: {
+        '1': ['Building A', 'Building B','Building C', 'Building D'],
+        '2': []
+      },
+      rooms: [
+      { id: 'A101', name: 'A101', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
+    { id: 'A102', name: 'A102', capacity: 40, building: 'Building A', floor: '1st Floor', equipment: 'Whiteboard' },
+    { id: 'A201', name: 'A201', capacity: 60, building: 'Building A', floor: '2nd Floor', equipment: 'Computer' },
+    { id: 'A202', name: 'A202', capacity: 55, building: 'Building A', floor: '2nd Floor', equipment: 'Projector' },
+    { id: 'A301', name: 'A301', capacity: 70, building: 'Building A', floor: '3rd Floor', equipment: 'Smartboard' },
+    { id: 'A302', name: 'A302', capacity: 65, building: 'Building A', floor: '3rd Floor', equipment: 'Whiteboard' },
+    { id: 'A401', name: 'A401', capacity: 80, building: 'Building A', floor: '4th Floor', equipment: 'Projector' },
+    { id: 'A402', name: 'A402', capacity: 75, building: 'Building A', floor: '4th Floor', equipment: 'Computer' },
+
+    // Building B
+    { id: 'B101', name: 'B101', capacity: 50, building: 'Building B', floor: '1st Floor', equipment: 'Projector' },
+    { id: 'B102', name: 'B102', capacity: 45, building: 'Building B', floor: '1st Floor', equipment: 'Whiteboard' },
+    { id: 'B201', name: 'B201', capacity: 60, building: 'Building B', floor: '2nd Floor', equipment: 'Computer' },
+    { id: 'B202', name: 'B202', capacity: 50, building: 'Building B', floor: '2nd Floor', equipment: 'Projector' },
+    { id: 'B301', name: 'B301', capacity: 70, building: 'Building B', floor: '3rd Floor', equipment: 'Smartboard' },
+    { id: 'B302', name: 'B302', capacity: 65, building: 'Building B', floor: '3rd Floor', equipment: 'Projector' },
+    { id: 'B401', name: 'B401', capacity: 80, building: 'Building B', floor: '4th Floor', equipment: 'Computer' },
+    { id: 'B402', name: 'B402', capacity: 75, building: 'Building B', floor: '4th Floor', equipment: 'Whiteboard' },
+
+    // Building C
+    { id: 'C101', name: 'C101', capacity: 55, building: 'Building C', floor: '1st Floor', equipment: 'Projector' },
+    { id: 'C102', name: 'C102', capacity: 50, building: 'Building C', floor: '1st Floor', equipment: 'Smartboard' },
+    { id: 'C201', name: 'C201', capacity: 65, building: 'Building C', floor: '2nd Floor', equipment: 'Computer' },
+    { id: 'C202', name: 'C202', capacity: 60, building: 'Building C', floor: '2nd Floor', equipment: 'Whiteboard' },
+    { id: 'C301', name: 'C301', capacity: 75, building: 'Building C', floor: '3rd Floor', equipment: 'Projector' },
+    { id: 'C302', name: 'C302', capacity: 70, building: 'Building C', floor: '3rd Floor', equipment: 'Smartboard' },
+    { id: 'C401', name: 'C401', capacity: 85, building: 'Building C', floor: '4th Floor', equipment: 'Computer' },
+    { id: 'C402', name: 'C402', capacity: 80, building: 'Building C', floor: '4th Floor', equipment: 'Whiteboard' },
+
+    // Building D
+    { id: 'D101', name: 'D101', capacity: 60, building: 'Building D', floor: '1st Floor', equipment: 'Projector' },
+    { id: 'D102', name: 'D102', capacity: 55, building: 'Building D', floor: '1st Floor', equipment: 'Whiteboard' },
+    { id: 'D201', name: 'D201', capacity: 70, building: 'Building D', floor: '2nd Floor', equipment: 'Computer' },
+    { id: 'D202', name: 'D202', capacity: 65, building: 'Building D', floor: '2nd Floor', equipment: 'Smartboard' },
+    { id: 'D301', name: 'D301', capacity: 85, building: 'Building D', floor: '3rd Floor', equipment: 'Projector' },
+    { id: 'D302', name: 'D302', capacity: 80, building: 'Building D', floor: '3rd Floor', equipment: 'Computer' },
+    { id: 'D401', name: 'D401', capacity: 90, building: 'Building D', floor: '4th Floor', equipment: 'Smartboard' },
+    { id: 'D402', name: 'D402', capacity: 85, building: 'Building D', floor: '4th Floor', equipment: 'Whiteboard' }
+      ],
+      currentPage: 1,
+      roomsPerPage: 12,
+      selectedCampus: '',
+>>>>>>> 2d653a9c216858a2c7a5038f62d578d8b32c9a41
       selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
       selectedEquipment: '',
-      currentPage: 1,
-      roomsPerPage: 12,
-      rooms: [],
+
       selectedRoom: null,
+<<<<<<< HEAD
+=======
+     
+>>>>>>> 2d653a9c216858a2c7a5038f62d578d8b32c9a41
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0],
       timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '19:00-21:00']
@@ -158,6 +238,7 @@ export default {
     date.setDate(date.getDate() + offset);
     return date.toISOString().split('T')[0];
   },
+<<<<<<< HEAD
 
   getInfor() {
     this.username = "test_user";
@@ -190,6 +271,51 @@ export default {
   },
 
   isSlotAvailable(slot) {
+=======
+    getInfor() {
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      this.username = userInfo.username;
+      this.role = userInfo.role;
+    },
+
+    parseToken(token) {
+      try {
+        const base64Url = token.split(".")[1];  
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        return JSON.parse(decodeURIComponent(escape(atob(base64))));
+      } catch (error) {
+        console.error("Token parsing error:", error);
+        return null;
+      }
+      
+    },
+    loadStaticRooms() {
+      this.rooms = [
+      { id: '107', name: '107', building: 'Foreign Building', capacity: 50, floor: '1st Floor', equipment: 'Projector' },
+      { id: '106', name: '108', building: 'Foreign Building', capacity: 50, floor: '1st Floor', equipment: 'Projector' },
+        { id: 'A207', name: 'A207', building: 'Building A', capacity: 50, floor: '2nd Floor', equipment: 'Projector' },
+        { id: 'A208', name: 'A208', building: 'Building A', capacity: 40, floor: '2nd Floor', equipment: 'Whiteboard' },
+        { id: 'A310', name: 'A310', building: 'Building A', capacity: 60, floor: '3rd Floor', equipment: 'Computer' },
+        { id: 'A410', name: 'A410', building: 'Building A', capacity: 55, floor: '3rd Floor', equipment: 'Projector' },
+        { id: '635', name: '635', building: 'Foreign Building', capacity: 70, floor: '6th Floor', equipment: 'Smartboard' },
+        { id: '610', name: '610', building: 'Foreign Building', capacity: 65, floor: '6th Floor', equipment: 'Whiteboard' }
+      ];
+    },
+    
+    loadStaticBookings() {
+      this.bookedSlots = {
+        "A101": {
+          "2025-03-20": ["08:00-10:00", "14:00-16:00"],
+          "2025-03-21": ["10:00-12:00"]
+        },
+        "A102": {
+          "2025-03-20": ["10:00-12:00"]
+        }
+      };
+    },
+    isSlotAvailable(slot) {
+>>>>>>> 2d653a9c216858a2c7a5038f62d578d8b32c9a41
   if (!this.selectedRoom) return false;
 
   // 将时间段字符串转换为日期对象
@@ -663,6 +789,7 @@ export default {
   /* 让弹窗往下移动 */
 }
 
+<<<<<<< HEAD
 
 ::v-deep(.el-message-box) {
   border-radius: 10px;
@@ -677,4 +804,6 @@ export default {
 ::v-deep(.el-message-box__content) {
   font-size: 16px;
 }
+=======
+>>>>>>> 2d653a9c216858a2c7a5038f62d578d8b32c9a41
 </style>
