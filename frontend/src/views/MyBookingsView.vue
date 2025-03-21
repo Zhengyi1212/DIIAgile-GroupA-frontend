@@ -32,10 +32,12 @@
               <div class="info-item">
                 <span class="icon">🏢</span>
                 <div class="info-content">
-                  <span class="info-label">Building</span>
+                  <span class="info-label">Building: </span>
                   <span class="info-value">{{ booking.classroom_details.building }}</span>
                 </div>
               </div>
+              
+            <!--add booking owner' username and email-->
 
               <div class="time-range">
                 <div class="time-block">

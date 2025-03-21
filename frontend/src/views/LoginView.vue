@@ -13,7 +13,7 @@
         <form class="login-form" @submit.prevent="handleLogin">
 
           <div class="form-row">
-            <label for="email">Username</label>
+            <label for="email">Email</label>
             <input id="email" v-model="email" type="email" placeholder="Enter your email" required>
           </div>
 
@@ -111,7 +111,7 @@ export default {
         if (data.success) {
           localStorage.setItem("token", data.token);
           this.checkToken();
-          alert("Login successful! Welcome "+ this.username + "! You are a " + this.role +".");
+          alert("Login successful! Welcome "+ loginData.username + "! You are a " + loginData.role+".");
         } else {
           alert("Login Failure: " + data.message);
         }

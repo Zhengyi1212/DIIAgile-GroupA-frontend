@@ -146,7 +146,8 @@ export default {
       alert("Failed to modify the profile: " + data.message);
     }
   } catch (error) {
-    console.error("Request Error:", error);
+    console.error("Request Error:", error); 
+  
     alert("The profile modification request failed, please try again later!");
   } finally {
     this.isLoading = false;

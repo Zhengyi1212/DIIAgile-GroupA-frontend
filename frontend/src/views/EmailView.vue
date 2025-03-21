@@ -11,11 +11,14 @@
         <div class="repair-footer">
           <span class="reporter">Reported by: {{ repair.reporter }}</span>
           <span class="timestamp">{{ formatDate(repair.timestamp) }}</span>
-          <select v-model="repair.status" @change="updateStatus(repair)">
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-          </select>
+          <div class="status-container">
+            <label for="status">Status:</label>
+            <select v-model="repair.status" @change="updateStatus(repair)">
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
@@ -58,8 +61,18 @@ export default {
 <style scoped>
 .email-container {
   padding: 2rem;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
+  background: linear-gradient(135deg, #f1f6fb, #e1efff);
+  border-radius: 10px;
+}
+
+h2 {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
 }
 
 .repair-list {
@@ -67,11 +80,17 @@ export default {
 }
 
 .repair-item {
-  background: #fff;
-  border-radius: 8px;
+  background: #ffffff;
+  border-radius: 10px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.repair-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 .repair-header {
@@ -83,22 +102,36 @@ export default {
 
 .room-number {
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  color: #333;
 }
 
 .urgency-tag {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.urgency-tag.low { background: #e6f4ff; color: #1890ff; }
-.urgency-tag.medium { background: #fffbe6; color: #faad14; }
-.urgency-tag.high { background: #fff1f0; color: #ff4d4f; }
+.urgency-tag.low {
+  background: #e6f4ff;
+  color: #1890ff;
+}
+
+.urgency-tag.medium {
+  background: #fffbe6;
+  color: #faad14;
+}
+
+.urgency-tag.high {
+  background: #fff1f0;
+  color: #ff4d4f;
+}
 
 .description {
-  color: #666;
-  margin-bottom: 1rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
 .repair-footer {
@@ -106,12 +139,39 @@ export default {
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
-  color: #999;
+  color: #777;
+}
+
+.reporter, .timestamp {
+  margin-right: 1rem;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+}
+
+label {
+  margin-right: 8px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 select {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
   border: 1px solid #ddd;
+  font-size: 1rem;
+  background-color: #fafafa;
+  transition: border 0.3s ease;
+}
+
+select:hover {
+  border-color: #66afe9;
+}
+
+select:focus {
+  border-color: #1890ff;
+  outline: none;
 }
 </style>
