@@ -158,7 +158,6 @@ export default {
       const start = (this.currentPage - 1) * this.roomsPerPage;
       return this.filteredRooms.slice(start, start + this.roomsPerPage);
     }
-
   },
   
   mounted() {
@@ -167,16 +166,18 @@ export default {
   },
 
   methods: {
+    
+
     async getClassroomInformationFromDB() {
       
       try {
-      const response = await fetch("http://127.0.0.1:5000/classrooms", {  
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-    
-        });
+      const url = `http://127.0.0.1:5000/classrooms?role=${encodeURIComponent(this.role)}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
         
         const data = await response.json();
         console.log(data);

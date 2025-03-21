@@ -111,7 +111,7 @@ export default {
         if (data.success) {
           localStorage.setItem("token", data.token);
           this.checkToken();
-          alert("Login successful");
+          alert("Login successful! Welcome "+ this.username + "! You are a " + this.role +".");
         } else {
           alert("Login Failure: " + data.message);
         }
