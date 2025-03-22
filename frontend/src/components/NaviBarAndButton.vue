@@ -36,8 +36,8 @@
                                     <label>Emergency degree:</label>
                                     <select v-model="repairForm.urgency">
                                         <option value="low">Common</option>
-                                        <option value="medium">Ergent</option>
-                                        <option value="high">Pretty ergent</option>
+                                        <option value="medium">Urgent</option>
+                                        <option value="high">Pretty urgent</option>
                                     </select>
                                 </div>
                                 <button type="submit" class="submit-button">Submit</button>
@@ -246,7 +246,7 @@ export default {
 }
 
 .email-icon {
-    width: 30px;
+    width: 40px;
     height: 30px;
     cursor: pointer;
     margin-right: 10px;
@@ -287,65 +287,144 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 999;
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.3s ease;
 }
 
 .modal-container {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
+    background: #ffffff;
+    padding: 2rem 2rem;
+    border-radius: 16px;
+    width: 440px;
+    max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transform-origin: center;
+    animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    font-weight: 600;
+    letter-spacing: -0.5px;
 }
 
 .modal-close {
     background: none;
     border: none;
-    font-size: 24px;
+    font-size: 28px;
+    color: #a0a0a0;
     cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+    padding: 0 0.5rem;
+    margin-right: -0.5rem;
+}
+
+.modal-close:hover {
+    color: #707070;
+    transform: scale(1.1);
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    font-size: 0.95rem;
+    color: #404040;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    padding-left: 0.25rem;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    width: 100% ;
+    margin: 0 ;
+    box-sizing: border-box;
+    padding: 0.85rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #333;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+    background: #ffffff;
+}
+
+.form-group textarea {
+    resize: none;
+    height: 120px;
+    overflow-y: auto;
+    line-height: 1.5;
+    min-width: auto;
+}
+
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.2em;
 }
 
 .submit-button {
-    background-color: #28a745;
+    background-color: #007bff;
     color: white;
-    padding: 10px 20px;
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     width: 100%;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .submit-button:hover {
-    background-color: #218838;
+    background-color: #0069d9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 
 .fade-enter-active, .fade-leave-active {
