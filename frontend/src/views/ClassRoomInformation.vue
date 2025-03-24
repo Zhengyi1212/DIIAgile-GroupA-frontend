@@ -7,6 +7,7 @@
     <el-main>
       <main class="main-content">
         <div class="filters-container">
+          <!-- Filter controls remain the same -->
           <div class="filter-group">
             <label>Building:</label>
             <select v-model="selectedBuilding" class="styled-select">
@@ -36,7 +37,6 @@
             </select>
           </div>
 
-
           <div class="date-selector">
             <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
               :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
@@ -44,8 +44,6 @@
             </button>
           </div>
         </div>
-
-
 
         <!-- Content Container -->
         <div class="content-container">
@@ -58,8 +56,13 @@
 
           <!-- Classroom Grid -->
           <div class="classroom-grid">
-            <div v-for="room in paginatedRooms" :key="room.classroom_name + room.date" class="classroom-card"
-              @click="selectRoom(room)">
+            <div 
+              v-for="room in paginatedRooms" 
+              :key="room.classroom_name + room.date" 
+              class="classroom-card"
+              :class="{ selected: selectedRoom && selectedRoom.classroom_name === room.classroom_name }"
+              @click="selectRoom(room)"
+            >
               <div class="card-header">
                 <h3 class="room-name">{{ room.classroom_name }}</h3>
                 <span class="capacity-badge">{{ room.capacity }} people</span>
@@ -75,15 +78,21 @@
           </div>
         </div>
 
-        <!-- Time Spans Section -->
-        <div v-if="selectedRoom" class="time-spans-section">
-          <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
-          <div class="time-grid">
-            <div v-for="timeSpan in timeSpans" :key="timeSpan.start_time" class="time-slot"
-              :class="{ available: timeSpan.is_available, booked: !timeSpan.is_available }"
-              @click="handleTimeSlotClick(timeSpan)">
-              <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
-              <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
+        <!-- Time Spans Section - Now full width and aligned -->
+        <div v-if="selectedRoom" class="time-spans-container">
+          <div class="time-spans-section">
+            <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
+            <div class="time-grid">
+              <div 
+                v-for="timeSpan in timeSpans" 
+                :key="timeSpan.start_time" 
+                class="time-slot"
+                :class="{ available: timeSpan.is_available, booked: !timeSpan.is_available }"
+                @click="handleTimeSlotClick(timeSpan)"
+              >
+                <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
+                <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -91,7 +100,6 @@
     </el-main>
   </el-container>
 </template>
-
 <script>
 import NaviBarAndButton from '@/components/NaviBarAndButton.vue';
 import { ElMessageBox, ElMessage } from "element-plus";
@@ -513,37 +521,29 @@ export default {
 };
 </script>
 
+
+
 <style scoped>
 .el-main {
-  padding-top: 60px;
-  /* 调整这个值以确保内容不会与导航栏重叠 */
-}
-
-.styled-input {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  width: 100px;
+  padding-top: 10px;
+  background: #f0f2f5;
+  margin-top: 30px; /* Light grey background for the entire page */
+ 
 }
 
 .main-content {
-  padding: 10px;
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
-  background: #f8f9fa;
   width: 100%;
-  min-height: 100vh;
+  min-height: 80vh;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .filters-container {
   position: sticky;
   top: 0;
-  background: #f8f9fa;
+  background: #fff;
   padding: 15px;
   z-index: 100;
   width: 100%;
@@ -552,198 +552,230 @@ export default {
   justify-content: center;
   gap: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  
+  border-radius: 20px;
 }
 
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.styled-select,
-.styled-input {
-  padding: 4px 6px;
-  font-size: 12px;
-  width: auto;
-  max-width: 120px;
-}
-
-
-.styled-select {
-  padding: 8px 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  cursor: pointer;
-}
-
-.classroom-timetable-container {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-  align-items: flex-start;
+.content-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 
 .classroom-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  padding-bottom: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+  padding: 10px 0;
 }
 
 .classroom-card {
   background: #fff;
-  padding: 10px;
+  padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
   cursor: pointer;
-  min-width: 180px;
+  border: 2px solid transparent;
 }
 
 .classroom-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .classroom-card.selected {
-  border: 2px solid #0073e6;
+  background-color: #f0f7ff;
+  border-color: #0073e6;
+  box-shadow: 0 4px 12px rgba(0, 115, 230, 0.2);
+  transform: translateY(-3px);
+  position: relative;
+  z-index: 1;
 }
 
+.classroom-card.selected::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid #0073e6;
+  border-radius: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 115, 230, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 115, 230, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 115, 230, 0);
+  }
+}
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.room-name {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
 }
 
 .capacity-badge {
   background: #0073e6;
   color: white;
-  padding: 3px 8px;
-  border-radius: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 12px;
-}
-
-.card-body {
-  margin-top: 10px;
+  font-weight: bold;
 }
 
 .room-info {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
+  font-size: 14px;
 }
 
 .info-item {
-  font-size: 14px;
   color: #555;
+}
+
+.time-spans-container {
+  width: 100%;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.time-spans-section {
+  width: 100%;
+}
+
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.time-slot {
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.time-slot.available {
+  background: #e6f7e6;
+  color: #1a7321;
+  border: 1px solid #b7e0b7;
+}
+
+.time-slot.booked {
+  background: #ffe6e6;
+  color: #73211a;
+  border: 1px solid #e0b7b7;
+  cursor: not-allowed;
+}
+
+.time-slot:hover:not(.booked) {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .pagination-controls {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 15px;
+  gap: 15px;
+  margin: 20px 0;
 }
 
 .pagination-controls button {
-  padding: 8px 12px;
-  margin: 0 5px;
-  border: none;
+  padding: 8px 16px;
   background: #0073e6;
   color: white;
-  border-radius: 5px;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .pagination-controls button:disabled {
-  background: #ccc;
+  background: #cccccc;
   cursor: not-allowed;
 }
 
+.pagination-controls button:hover:not(:disabled) {
+  background: #005bb5;
+}
 
-/* 日期选择器 */
 .date-selector {
   display: flex;
   gap: 10px;
-  margin: 20px 0;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .date-selector button {
   padding: 8px 12px;
-  border: none;
-  background: #eee;
-  border-radius: 5px;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.2s;
 }
 
 .date-selector button.active {
   background: #0073e6;
   color: white;
+  border-color: #0073e6;
 }
 
 .date-selector button:hover {
-  background: #005bb5;
-  color: white;
+  background: #e6f0fa;
 }
 
-/* 时间表 */
-.time-spans-section {
-  background: white;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  flex: 1;
-  max-width: 650px;
-  min-height: 100px;
-  max-height: 200px;
-  margin-top: 10px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 40px;
-  /* 保留两个时间卡牌的高度空间 */
-}
-
-.time-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  justify-content: center;
-}
-
-.time-slot {
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.3s;
-  min-width: 120px;
-  font-size: 14px;
-}
-
-.time-slot.available {
-  background: #d4edda;
-  color: #155724;
-}
-
-.time-slot.booked {
-  background: #f8d7da;
-  color: #721c24;
-  cursor: not-allowed;
-}
-
-.time-slot:hover {
-  opacity: 0.8;
-}
-
-::v-deep(.custom-message-box) {
-  margin-top: 100px !important;
-  /* 让弹窗往下移动 */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .classroom-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  
+  .time-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+  
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 15px; /* Rounded group */
+  }
 }
 </style>
