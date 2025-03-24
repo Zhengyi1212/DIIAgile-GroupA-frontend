@@ -1,8 +1,7 @@
 <template>
   <el-container>
     <el-header>
-      <naviBarAndButton :username="username" :role="role">
-      </naviBarAndButton>
+      <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
     <el-main>
       <div class="my-bookings-container">
@@ -18,9 +17,17 @@
           <p class="error-message">{{ error }}</p>
         </div>
 
-        <transition-group v-if="bookings.length" name="booking-list" tag="div" class="booking-grid">
-          <div v-for="booking in bookings" :key="booking.id" class="booking-card"
-            :class="{ 'past-booking': isPastBooking(booking.endTime), 'active-booking': !isPastBooking(booking.endTime) }">
+        <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
+          <!---->
+          <div
+            v-for="booking in paginatedBookings"
+            :key="booking.booking_id"
+            class="booking-card"
+            :class="[
+              isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
+              getRoleClass(booking.user_role)
+            ]"
+          >
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
@@ -30,18 +37,18 @@
 
             <div class="card-body">
               <div class="info-item">
-                <span class="icon">📍</span>
+                <span class="icon">🏢</span>
                 <div class="info-content">
-                  <span class="info-label">Campus</span>
-                  <span class="info-value">{{ booking.campus }}</span>
+                  <span class="info-label">Building: </span>
+                  <span class="info-value">{{ booking.classroom_details.building }}</span>
                 </div>
               </div>
 
               <div class="info-item">
                 <span class="icon">📧</span>
                 <div class="info-content">
-                  <span class="info-label">Building</span>
-                  <span class="info-value">{{ booking.building }}</span>
+                  <span class="info-label">Owner Email: </span>
+                  <span class="info-value">{{ booking.user_email }}</span>
                 </div>
               </div>
 
@@ -91,27 +98,18 @@ export default {
       bookings: [],
       currentPage: 1,
       itemsPerPage: 5,
-      bookings: [
-        {
-          id: 1,
-          room: 'A101',
-          campus: 'Xiaoxiang Campus',
-          building: 'Block A',
-          startTime: '2025-03-14T14:00:00',
-          endTime: '2025-03-14T16:00:00',
-        },
-        {
-          id: 2,
-          room: 'B202',
-          campus: 'Xiaoxiang Campus',
-          building: 'Block B',
-          startTime: '2025-03-15T16:00:00',
-          endTime: '2025-03-15T18:00:00',
-        },
-      ],
       loading: false,
       error: null
     };
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.bookings.length / this.itemsPerPage);
+    },
+    paginatedBookings() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.bookings.slice(start, start + this.itemsPerPage);
+    }
   },
   methods: {
     getInfor() {
@@ -120,6 +118,7 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
+
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];  
@@ -130,24 +129,87 @@ export default {
         return null;
       }
     },
-    isPastBooking(endTime) {
-      const endDate = new Date(endTime);
-      const now = new Date();
-      return endDate.getTime() < now.getTime();
+
+    isPastBooking(start_time) {
+      if (!start_time) return true;
+      const startDate = new Date(start_time);
+      return startDate.getTime() < Date.now();
     },
-    handleCancel(id) {
-      this.bookings = this.bookings.filter(booking => booking.id !== id);
+
+    getCorrectTime(startTime) {
+      if (!startTime) return new Date();
+      const start = new Date(startTime);
+      start.setHours(start.getHours() - 8);
+      return start;
     },
+
+    getEndTime(startTime) {
+      if (!startTime) return new Date();
+      const start = new Date(startTime);
+      start.setHours(start.getHours() - 6);
+      return start;
+    },
+
     formatDateTime(datetime) {
-      const date = new Date(datetime);
-      return date.toLocaleString();
+      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
     },
-    getStatusText(booking) {
-      console.log('Current:', new Date(), 'EndTime:', new Date(booking.endTime));
-      return this.isPastBooking(booking.endTime) ? 'Expired' : 'Active';
+
+    getRoleClass(role) {
+      switch (role) {
+        case 'Student':
+          return 'student-card';
+        case 'Lecture':
+          return 'teacher-card';
+        case 'Tutor':
+          return 'teacher-card';
+        case 'Admin':
+          return 'admin-card';
+        default:
+          return '';
+      }
     },
-    getStatusClass(booking) {
-      return this.isPastBooking(booking.endTime) ? 'expired' : 'active';
+
+    async getBookingsInformation() {
+      this.loading = true;
+      this.error = null;
+      const token = localStorage.getItem("token");
+      const userInfo = this.parseToken(token);
+      if (!userInfo) {
+        this.error = "Invalid token. Please log in again.";
+        this.loading = false;
+        return;
+      }
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mybookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: userInfo.email })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          this.bookings = data.bookings;
+        } else {
+          this.error = data.message || "Failed to fetch bookings.";
+        }
+      } catch (error) {
+        this.error = "Request failed. Please try again later.";
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
     }
   },
   mounted() {
@@ -156,6 +218,7 @@ export default {
   }
 };
 </script>
+
 
 
 
@@ -172,8 +235,8 @@ export default {
 }
 
 .admin-card {
-  border-left-color: #ef5350 !important;
-  background-color: #ffebee !important;
+  border-left-color: #ea6bcd !important;
+  background-color: #f5e5ef !important;
 }
 .my-bookings-container {
   width: 100%;
@@ -331,7 +394,25 @@ export default {
   background: #ff5252;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
-
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.pagination-controls button {
+  padding: 5px 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.pagination-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
 .loading-state {
   text-align: center;
   padding: 4rem 0;
