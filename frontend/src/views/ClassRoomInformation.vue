@@ -22,14 +22,10 @@
             </select>
           </div>
           <div class="filter-group">
-
-            <label>Min Capacity:</label>
+            <label>Capacity:</label>
             <input v-model.number="selectedCapacity" type="number" class="styled-input"
               placeholder="Enter min capacity">
           </div>
-
-
-
           <div class="filter-group">
             <label>Equipment:</label>
             <select v-model="selectedEquipment" class="styled-select">
@@ -39,6 +35,7 @@
               </option>
             </select>
           </div>
+
 
           <div class="date-selector">
             <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
@@ -117,9 +114,7 @@ export default {
       selectedFloor: '',
       selectedCapacity: '',
       selectedEquipment: '',
-
       selectedRoom: null,
-
       bookedSlots: {},
       selectedDate: new Date().toISOString().split('T')[0],
       timeSpans: [
@@ -132,12 +127,13 @@ export default {
     buildingOptions() {
       return [...new Set(this.rooms.map(room => room.building))];
     },
+
     filteredRooms() {
       return this.rooms.filter((room) => {
         return (
           (!this.selectedDate || room.date === this.selectedDate) &&
           (!this.selectedBuilding || room.building === this.selectedBuilding) &&
-          (!this.selectedFloor || room.floor === this.selectedFloor) &&
+          (!this.selectedFloor || room.floor === Number(this.selectedFloor)) &&
           (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
           (!this.selectedEquipment || room.device === this.selectedEquipment)
         );
@@ -151,14 +147,12 @@ export default {
           floors.add(room.floor);
         }
       });
-      return Array.from(floors);
+      return Array.from(floors).sort();
     },
 
     equipmentOptions() {
       return [...new Set(this.rooms.map(room => room.device))];
     },
-
-
 
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredRooms.length / this.roomsPerPage));
@@ -556,7 +550,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
+  gap: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
