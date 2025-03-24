@@ -168,6 +168,8 @@
           role = "Admin";
         } else if(this.inviteCode == "Lecture") {
           role = "Lecture"
+        } else if(this.inviteCode == "Tutor") {
+          role = "Tutor"
         }
 
         ////change here
