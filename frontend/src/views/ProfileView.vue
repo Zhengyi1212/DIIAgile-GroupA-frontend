@@ -128,7 +128,9 @@ export default {
     password: this.user.realPassword || this.originalUser.realPassword, 
     username: this.user.username,
   };
-  
+
+  this.isLoading = true; // 添加加载状态
+
   try {
     const response = await fetch("http://127.0.0.1:5000/profile", {  
       method: "POST",
@@ -140,22 +142,25 @@ export default {
     
     const data = await response.json();
     if (data.success) {
-      localStorage.setItem("token", data.token);
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
       alert("Profile modification successful!");
+      this.isEditing = false; // 退出编辑模式
     } else {
       alert("Failed to modify the profile: " + data.message);
     }
   } catch (error) {
     console.error("Request Error:", error); 
-  
     alert("The profile modification request failed, please try again later!");
   } finally {
-    this.isLoading = false;
-  }
-}
-    
+    this.isLoading = false; // 结束加载状态
+      }
+    }
   }
 };
+    
+
 </script>
 
 <style scoped>
