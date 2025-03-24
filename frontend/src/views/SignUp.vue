@@ -162,10 +162,14 @@
         let role = "Student"; // Default role is Customer
 
 
-        // change here!!!!
-        if (this.inviteCode === "demo-lecturer") {
+        // change here!!!! bad practice
+        if (this.inviteCode === "Admin") {
           // 改成 “invite code incorrect, refuse to register”
-          role = "lecturer";
+          role = "Admin";
+        } else if(this.inviteCode == "Lecture") {
+          role = "Lecture"
+        } else if(this.inviteCode == "Tutor") {
+          role = "Tutor"
         }
 
         ////change here
