@@ -1,101 +1,89 @@
 <template>
   <el-container>
     <el-header>
-      <naviBarAndButton :username="username" :role="role">
-      </naviBarAndButton>
+      <naviBarAndButton :username="username" :role="role"></naviBarAndButton>
     </el-header>
+
     <el-main>
       <main class="main-content">
-        <!-- Filter Area -->
         <div class="filters-container">
-          <div class="filter-group">
-            <label>Campus:</label>
-            <select v-model="selectedCampus" class="styled-select">
-              <option value="">All Campuses</option>
-              <option v-for="campus in campuses" :key="campus.id" :value="campus.id">
-                {{ campus.name }}
-              </option>
-            </select>
-          </div>
-
           <div class="filter-group">
             <label>Building:</label>
             <select v-model="selectedBuilding" class="styled-select">
               <option value="">All Buildings</option>
-              <option v-for="building in filteredBuildings" :key="building">
-                {{ building }}
-              </option>
+              <option v-for="building in buildingOptions" :key="building">{{ building }}</option>
             </select>
           </div>
-
           <div class="filter-group">
             <label>Floor:</label>
             <select v-model="selectedFloor" class="styled-select">
               <option value="">All Floors</option>
-              <option v-for="floor in filteredFloors" :key="floor">
-                {{ floor }}
-              </option>
+              <option v-for="floor in floorOptions" :key="floor">{{ floor }}</option>
             </select>
           </div>
           <div class="filter-group">
-  <label>Min Capacity:</label>
-  <input v-model.number="selectedCapacity" type="number" class="styled-input" placeholder="Enter min capacity">
-</div>
+            <label>Capacity:</label>
+            <input v-model.number="selectedCapacity" type="number" class="styled-input"
+              placeholder="Enter min capacity">
+          </div>
+          <div class="filter-group">
+            <label>Equipment:</label>
+            <select v-model="selectedEquipment" class="styled-select">
+              <option value="">Any</option>
+              <option v-for="equip in equipmentOptions" :key="equip">
+                {{ equip }}
+              </option>
+            </select>
+          </div>
 
-<div class="filter-group">
-  <label>Equipment:</label>
-  <select v-model="selectedEquipment" class="styled-select">
-    <option value="">Any</option>
-    <option v-for="equip in equipmentOptions" :key="equip">
-      {{ equip }}
-    </option>
-  </select>
-</div>
 
+          <div class="date-selector">
+            <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
+              :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
+              {{ getFormattedDate(offset - 1) }}
+            </button>
+          </div>
         </div>
 
-        <!-- Date Selector -->
-        <div class="date-selector">
-          <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
-            :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
-            {{ getFormattedDate(offset - 1) }}
-          </button>
-        </div>
 
+
+        <!-- Content Container -->
         <div class="content-container">
-          <!-- Classroom List -->
+          <!-- Pagination Controls -->
           <div class="pagination-controls">
             <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
             <span>Page {{ currentPage }} / {{ totalPages }}</span>
             <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
           </div>
+
+          <!-- Classroom Grid -->
           <div class="classroom-grid">
-            <div v-for="room in paginatedRooms" :key="room.id" class="classroom-card"
-              :class="{ selected: selectedRoom?.id === room.id }" @click="selectRoom(room)">
+            <div v-for="room in paginatedRooms" :key="room.classroom_name + room.date" class="classroom-card"
+              @click="selectRoom(room)">
               <div class="card-header">
-                <h3 class="room-name">{{ room.name }}</h3>
+                <h3 class="room-name">{{ room.classroom_name }}</h3>
                 <span class="capacity-badge">{{ room.capacity }} people</span>
               </div>
               <div class="card-body">
                 <div class="room-info">
-                  <span class="info-item">🖥️ {{ room.equipment || 'Multimedia Equipment' }}</span>
-                  <span class="info-item">📍 {{ room.building }} {{ room.floor }}</span>
+                  <span class="info-item">🏢 {{ room.building }}</span>
+                  <span class="info-item">📍 {{ room.floor + " floor" }}</span>
+                  <span class="info-item">🖥️ {{ room.device || 'Multimedia Equipment' }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Timetable -->
-        <div v-if="selectedRoom" class="timetable-container">
-          <h3 class="timetable-title">{{ selectedRoom.name }} Reservation Timetable</h3>
+        <!-- Time Spans Section -->
+        <div v-if="selectedRoom" class="time-spans-section">
+          <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
           <div class="time-grid">
-            <div v-for="slot in timeSlots" :key="slot" class="time-slot"
-              :class="{ available: isSlotAvailable(slot), booked: !isSlotAvailable(slot) }"
-              @click="bookSlot(slot)">
-              <span class="slot-time">{{ slot }}</span>
-              <span v-if="isSlotAvailable(slot)" class="slot-status">Available</span>
-              <span v-else class="slot-status">Booked</span>
+            <div v-for="timeSpan in timeSpans" :key="timeSpan.start_time" class="time-slot"
+              :class="{ available: timeSpan.is_available, booked: !timeSpan.is_available }"
+              @click="handleTimeSlotClick(timeSpan)">
+              <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
+              <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
             </div>
           </div>
         </div>
@@ -104,10 +92,9 @@
   </el-container>
 </template>
 
-
 <script>
 import NaviBarAndButton from '@/components/NaviBarAndButton.vue';
-
+import { ElMessageBox, ElMessage } from "element-plus";
 export default {
   name: 'ClassRoomInformation',
   components: {
@@ -117,53 +104,8 @@ export default {
     return {
       username: '',
       role: '',
-      campuses: [
-        { id: '1', name: 'Xiaoxiang Campus' },
-        { id: '2', name: 'North Campus' }
-      ],
-      buildings: {
-        '1': ['Building A', 'Building B','Building C', 'Building D'],
-        '2': []
-      },
+      email : '',
       rooms: [
-      { id: 'A101', name: 'A101', capacity: 50, building: 'Building A', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'A102', name: 'A102', capacity: 40, building: 'Building A', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'A201', name: 'A201', capacity: 60, building: 'Building A', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'A202', name: 'A202', capacity: 55, building: 'Building A', floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'A301', name: 'A301', capacity: 70, building: 'Building A', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'A302', name: 'A302', capacity: 65, building: 'Building A', floor: '3rd Floor', equipment: 'Whiteboard' },
-    { id: 'A401', name: 'A401', capacity: 80, building: 'Building A', floor: '4th Floor', equipment: 'Projector' },
-    { id: 'A402', name: 'A402', capacity: 75, building: 'Building A', floor: '4th Floor', equipment: 'Computer' },
-
-    // Building B
-    { id: 'B101', name: 'B101', capacity: 50, building: 'Building B', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'B102', name: 'B102', capacity: 45, building: 'Building B', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'B201', name: 'B201', capacity: 60, building: 'Building B', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'B202', name: 'B202', capacity: 50, building: 'Building B', floor: '2nd Floor', equipment: 'Projector' },
-    { id: 'B301', name: 'B301', capacity: 70, building: 'Building B', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'B302', name: 'B302', capacity: 65, building: 'Building B', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'B401', name: 'B401', capacity: 80, building: 'Building B', floor: '4th Floor', equipment: 'Computer' },
-    { id: 'B402', name: 'B402', capacity: 75, building: 'Building B', floor: '4th Floor', equipment: 'Whiteboard' },
-
-    // Building C
-    { id: 'C101', name: 'C101', capacity: 55, building: 'Building C', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'C102', name: 'C102', capacity: 50, building: 'Building C', floor: '1st Floor', equipment: 'Smartboard' },
-    { id: 'C201', name: 'C201', capacity: 65, building: 'Building C', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'C202', name: 'C202', capacity: 60, building: 'Building C', floor: '2nd Floor', equipment: 'Whiteboard' },
-    { id: 'C301', name: 'C301', capacity: 75, building: 'Building C', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'C302', name: 'C302', capacity: 70, building: 'Building C', floor: '3rd Floor', equipment: 'Smartboard' },
-    { id: 'C401', name: 'C401', capacity: 85, building: 'Building C', floor: '4th Floor', equipment: 'Computer' },
-    { id: 'C402', name: 'C402', capacity: 80, building: 'Building C', floor: '4th Floor', equipment: 'Whiteboard' },
-
-    // Building D
-    { id: 'D101', name: 'D101', capacity: 60, building: 'Building D', floor: '1st Floor', equipment: 'Projector' },
-    { id: 'D102', name: 'D102', capacity: 55, building: 'Building D', floor: '1st Floor', equipment: 'Whiteboard' },
-    { id: 'D201', name: 'D201', capacity: 70, building: 'Building D', floor: '2nd Floor', equipment: 'Computer' },
-    { id: 'D202', name: 'D202', capacity: 65, building: 'Building D', floor: '2nd Floor', equipment: 'Smartboard' },
-    { id: 'D301', name: 'D301', capacity: 85, building: 'Building D', floor: '3rd Floor', equipment: 'Projector' },
-    { id: 'D302', name: 'D302', capacity: 80, building: 'Building D', floor: '3rd Floor', equipment: 'Computer' },
-    { id: 'D401', name: 'D401', capacity: 90, building: 'Building D', floor: '4th Floor', equipment: 'Smartboard' },
-    { id: 'D402', name: 'D402', capacity: 85, building: 'Building D', floor: '4th Floor', equipment: 'Whiteboard' }
       ],
       currentPage: 1,
       roomsPerPage: 12,
@@ -171,121 +113,412 @@ export default {
       selectedBuilding: '',
       selectedFloor: '',
       selectedCapacity: '',
-    selectedEquipment: '',
+      selectedEquipment: '',
       selectedRoom: null,
-      timeSlots: ['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00','19:00-21:00'],
       bookedSlots: {},
-      selectedDate: new Date().toISOString().split('T')[0]
+      selectedDate: new Date().toISOString().split('T')[0],
+      timeSpans: [
+
+      ],
     };
   },
+
   computed: {
-    capacityOptions() {
-    // 生成唯一的容量选项
-    return [...new Set(this.rooms.map(room => room.capacity))].sort((a, b) => a - b);
-  },
-  equipmentOptions() {
-    // 生成唯一的设备选项
-    return [...new Set(this.rooms.map(room => room.equipment))];
-  },
-    filteredBuildings() {
-      return this.selectedCampus ? this.buildings[this.selectedCampus] || [] : [];
+    buildingOptions() {
+      return [...new Set(this.rooms.map(room => room.building))];
     },
-    filteredFloors() {
+
+    filteredRooms() {
+      return this.rooms.filter((room) => {
+        return (
+          (!this.selectedDate || room.date === this.selectedDate) &&
+          (!this.selectedBuilding || room.building === this.selectedBuilding) &&
+          (!this.selectedFloor || room.floor === Number(this.selectedFloor)) &&
+          (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
+          (!this.selectedEquipment || room.device === this.selectedEquipment)
+        );
+      });
+    },
+
+    floorOptions() {
       const floors = new Set();
       this.rooms.forEach(room => {
-        if ((!this.selectedBuilding || room.building === this.selectedBuilding)) {
+        if (!this.selectedBuilding || room.building === this.selectedBuilding) {
           floors.add(room.floor);
         }
       });
-      return Array.from(floors);
+      return Array.from(floors).sort();
     },
-    filteredRooms() {
-    return this.rooms.filter(room => {
-      return (
-        (!this.selectedBuilding || room.building === this.selectedBuilding) &&
-        (!this.selectedFloor || room.floor === this.selectedFloor) &&
-        (!this.selectedCapacity || room.capacity >= this.selectedCapacity) &&
-        (!this.selectedEquipment || room.equipment === this.selectedEquipment)
-      );
-    });
+
+    equipmentOptions() {
+      return [...new Set(this.rooms.map(room => room.device))];
     },
+
     totalPages() {
       return Math.max(1, Math.ceil(this.filteredRooms.length / this.roomsPerPage));
     },
+
     paginatedRooms() {
       const start = (this.currentPage - 1) * this.roomsPerPage;
-      const end = start + this.roomsPerPage;
-      return this.filteredRooms.slice(start, end);
+      return this.filteredRooms.slice(start, start + this.roomsPerPage);
     }
   },
+
+  mounted() {
+    this.getInfor();
+    this.getClassroomInformationFromDB()
+  },
+
   methods: {
+
+
+    async getClassroomInformationFromDB() {
+      try {
+        // Construct the URL with the role query parameter
+        const url = `http://127.0.0.1:5000/classrooms?role=${encodeURIComponent(this.role)}`;
+
+        // Send the GET request
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Parse the JSON response
+        const data = await response.json();
+        console.log("Response Data:", data);
+
+        // Check if the request was successful
+        if (data.success) {
+          // Update the rooms variable with the retrieved classrooms
+          this.rooms = data.classrooms;
+          alert("Get classrooms successful!");
+        } else {
+          // Handle failure case
+          alert("Classroom information retrieval failure: " + data.message);
+        }
+      } catch (error) {
+        // Handle any errors that occur during the request
+        console.error("Request Error:", error);
+        alert("Failed to get classroom information!");
+      } finally {
+        // This block runs regardless of success or failure
+        console.log("Request completed.");
+      }
+    },
+
+
+    getFormattedDate(offset) {
+      const date = new Date();
+      date.setDate(date.getDate() + offset);
+      return date.toISOString().split('T')[0];
+    },
+
     getInfor() {
       const token = localStorage.getItem("token");
       const userInfo = this.parseToken(token);
       this.username = userInfo.username;
       this.role = userInfo.role;
+      this.email = userInfo.email
     },
+
     parseToken(token) {
       try {
-        const base64Url = token.split(".")[1];  
+        const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
         console.error("Token parsing error:", error);
         return null;
       }
+
     },
-    selectRoom(room) {
-      this.selectedRoom = room;
-    },
-    isSlotAvailable(slot) {
-      return !this.bookedSlots[this.selectedRoom?.id]?.[this.selectedDate]?.includes(slot);
-    },
-    bookSlot(slot) {
+
+
+    handleTimeSlotClick(slot) {
       if (!this.selectedRoom) return;
-      if (!this.bookedSlots[this.selectedRoom.id]) {
-        this.bookedSlots[this.selectedRoom.id] = {};
+
+      if (this.role === "Admin") {
+        // Admin 角色，提供 "修改教室" 和 "预约" 两个选项
+        ElMessageBox({
+          title: "Admin Actions",
+          message: `You have selected <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>. 
+                <br/>Would you like to modify this room or proceed with booking?`,
+          dangerouslyUseHTMLString: true,
+          showCancelButton: true,
+          confirmButtonText: "Modify Room",
+          cancelButtonText: "Reserve",
+          customClass: "custom-message-box",
+        })
+          .then(() => {
+            // 选择 "Modify Room" 进入教室修改模式
+            this.modifyRoom();
+          })
+          .catch(() => {
+            // 选择 "Reserve" 进行预约
+            this.confirmBooking(slot);
+          });
+      } else {
+        // 普通用户，直接弹出预约确认
+        ElMessageBox.confirm(
+          `Do you want to book <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>?`,
+          "Confirm Booking",
+          {
+            dangerouslyUseHTMLString: true,
+            confirmButtonText: "Yes, Book it!",
+            cancelButtonText: "Cancel",
+            type: "info",
+            customClass: "custom-message-box",
+            center: true
+          }
+        )
+          .then(() => {
+            this.confirmBooking(slot);
+          })
+          .catch(() => {
+            // 用户取消预约
+          });
       }
-      if (!this.bookedSlots[this.selectedRoom.id][this.selectedDate]) {
-        this.bookedSlots[this.selectedRoom.id][this.selectedDate] = [];
+    },
+
+    async confirmBooking(slot) {
+      if (!slot.is_available) {
+        alert("This time slot is already booked.");
+        return;
       }
-      this.bookedSlots[this.selectedRoom.id][this.selectedDate].push(slot);
+
+      //const userEmail = prompt("Please enter your email to confirm the booking:");
+     // if (!userEmail) {
+       // alert("Email is required to confirm the booking.");
+       // return;
+     // }
+
+      try {
+        const url = "http://127.0.0.1:5000/classrooms";
+        console.log(`${this.selectedRoom.date} ${slot.start_time}`)
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            classroom_name: this.selectedRoom.classroom_name,
+            time: `${this.selectedRoom.date}T${slot.start_time}`, 
+            // Combine date and start_time
+            email: this.email,
+            request_type : "booking"
+          }),
+        });
+
+        const data = await response.json();
+        console.log("Booking Response:", data);
+
+        if (data.success) {
+          alert("Booking confirmed successfully!");
+          // Update the time slot's availability in the frontend
+          slot.is_available = false;
+        } else {
+          alert("Failed to confirm booking: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("Failed to confirm booking!");
+      }
     },
-    getFormattedDate(offset) {
-      const date = new Date();
-      date.setDate(date.getDate() + offset);
-      return date.toISOString().split('T')[0];
+
+    formatTimeSpan(startTime) {
+      const start = new Date(`1970-01-01T${startTime}Z`); // Parse start time
+      const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours
+
+      // Convert times to HH:MM:SS format, ensuring midnight crossover is handled
+      const formatTime = (date) => date.toISOString().slice(11, 19);
+
+      return `${formatTime(start)} - ${formatTime(end)}`;
     },
+
+
+    async selectRoom(room) {
+      this.selectedRoom = room; // Store the selected room
+      try {
+        // Send a POST request to the backend
+        const url = "http://127.0.0.1:5000/classrooms";
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            classroom_name: room.classroom_name,
+            date: room.date,
+            request_type: "get_classroom"
+          }),
+        });
+
+        const data = await response.json();
+        console.log("Time Spans Response:", data);
+
+        if (data.success) {
+          this.timeSpans = data.time_spans; // Store the time spans
+        } else {
+          alert("Failed to fetch time spans: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("Failed to fetch time spans!");
+      }
+    },
+
+
+
+    modifyRoom() {
+      // 保存当前房间的信息，以便在点击取消时恢复
+      const originalRoom = { ...this.selectedRoom };
+
+      ElMessageBox({
+        title: "Modify Room Information",
+        message: `
+      <div>
+        <label>New Capacity:</label>
+        <input id="newCapacity" type="number" value="${this.selectedRoom.capacity}" placeholder="Enter new capacity" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+        <label style="margin-top: 10px; display: block;">New Equipment:</label>
+        <input id="newEquipment" type="text" value="${this.selectedRoom.equipment}" placeholder="Enter new equipment" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+        
+        <label style="margin-top: 10px;">Disable Bookings Between:</label>
+        <div>
+          <!-- 选择禁用的起始日期和时间 -->
+          <input id="disableStartDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableStartTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select Start Time</option>
+            <option value="08:00">08:00</option>
+            <option value="10:00">10:00</option>
+            <option value="14:00">14:00</option>
+            <option value="16:00">16:00</option>
+            <option value="19:00">19:00</option>
+          </select>
+          
+          <!-- 选择禁用的结束日期和时间 -->
+          <input id="disableEndDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+          <select id="disableEndTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+            <option value="">Select End Time</option>
+            <option value="10:00">10:00</option>
+            <option value="12:00">12:00</option>
+            <option value="16:00">16:00</option>
+            <option value="18:00">18:00</option>
+            <option value="21:00">21:00</option>
+          </select>
+        </div>
+      </div>
+    `,
+        dangerouslyUseHTMLString: true,
+        showCancelButton: true,
+        confirmButtonText: "Save Changes",
+        cancelButtonText: "Cancel",
+        customClass: "custom-message-box",
+        beforeClose: (action, instance, done) => {
+          const newCapacity = document.getElementById("newCapacity") ? document.getElementById("newCapacity").value.trim() : '';
+          const newEquipment = document.getElementById("newEquipment") ? document.getElementById("newEquipment").value.trim() : '';
+          const disableStartDate = document.getElementById("disableStartDate") ? document.getElementById("disableStartDate").value : '';
+          const disableStartTime = document.getElementById("disableStartTime") ? document.getElementById("disableStartTime").value : '';
+          const disableEndDate = document.getElementById("disableEndDate") ? document.getElementById("disableEndDate").value : '';
+          const disableEndTime = document.getElementById("disableEndTime") ? document.getElementById("disableEndTime").value : '';
+
+          // 如果点击的是确认按钮（即保存更改）
+          if (action === "confirm") {
+            // 检查容量是否有效
+            if (newCapacity && !/^[1-9][0-9]*$/.test(newCapacity)) {
+              ElMessage({ type: "warning", message: "Capacity must be a positive number!" });
+              done(); // 确保弹窗关闭
+              return;
+            }
+
+            // 更新房间信息
+            if (newCapacity) {
+              this.selectedRoom.capacity = parseInt(newCapacity);
+            }
+            if (newEquipment) {
+              this.selectedRoom.equipment = newEquipment;
+            }
+
+            // 如果设置了“禁用预定时间”，更新房间的预定信息
+            if (disableStartDate && disableStartTime && disableEndDate && disableEndTime) {
+              const disableStartDateTime = new Date(`${disableStartDate}T${disableStartTime}:00`);
+              const disableEndDateTime = new Date(`${disableEndDate}T${disableEndTime}:00`);
+
+              if (!this.selectedRoom.disabledTimes) {
+                this.selectedRoom.disabledTimes = [];
+              }
+
+              // 禁用从选择的开始时间到结束时间的所有时间段
+              for (let currentDate = disableStartDateTime; currentDate <= disableEndDateTime; currentDate.setHours(currentDate.getHours() + 2)) {
+                this.selectedRoom.disabledTimes.push(new Date(currentDate));
+              }
+
+              ElMessage({ type: "success", message: `Bookings disabled from ${disableStartDateTime.toLocaleString()} to ${disableEndDateTime.toLocaleString()}.` });
+            }
+
+            ElMessage({ type: "success", message: "Room information updated successfully." });
+          } else {
+            // 如果点击了取消按钮，恢复原来的房间信息
+            this.selectedRoom = originalRoom;
+          }
+
+          // 确保无论点击什么按钮，done() 都被调用
+          done();
+        }
+      }).catch((error) => {
+        // 处理取消操作的拒绝情况
+        if (error === "cancel") {
+          console.log("用户取消了操作。");
+        } else {
+          console.error("意外错误: ", error);
+        }
+      });
+    },
+
+
+
+    modifyRoomEquipment() {
+      ElMessageBox.prompt(
+        "Modify Room Equipment",
+        "Enter new equipment details:",
+        {
+          confirmButtonText: "Save",
+          cancelButtonText: "Cancel",
+        }
+      )
+        .then(({ value }) => {
+          this.selectedRoom.equipment = value;
+          ElMessage({
+            type: "success",
+            message: `Room equipment updated to "${value}".`
+          });
+        })
+        .catch(() => {
+          ElMessage({
+            type: "info",
+            message: "Equipment modification canceled."
+          });
+        });
+    },
+
     nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      } 
-    }, 
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
+      if (this.currentPage < this.totalPages) this.currentPage++;
     },
-  },
-  mounted() {
-    this.getInfor();
-  },
-  watch: {
-    filteredRooms() {
-      this.currentPage = 1;
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
     }
-  }
+  },
+
 };
 </script>
 
-
-
-
-
 <style scoped>
 .el-main {
-  padding-top: 60px; /* 调整这个值以确保内容不会与导航栏重叠 */
+  padding-top: 60px;
+  /* 调整这个值以确保内容不会与导航栏重叠 */
 }
+
 .styled-input {
   padding: 8px 12px;
   border: 1px solid #ccc;
@@ -306,30 +539,36 @@ export default {
   flex-direction: column;
   align-items: center;
 }
-.content-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
 
 .filters-container {
   position: sticky;
   top: 0;
   background: #f8f9fa;
-  padding: 10px;
+  padding: 15px;
   z-index: 100;
   width: 100%;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
+  gap: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
+
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  white-space: nowrap;
 }
+
+.styled-select,
+.styled-input {
+  padding: 4px 6px;
+  font-size: 12px;
+  width: auto;
+  max-width: 120px;
+}
+
 
 .styled-select {
   padding: 8px 12px;
@@ -402,6 +641,7 @@ export default {
   font-size: 14px;
   color: #555;
 }
+
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -452,7 +692,7 @@ export default {
 }
 
 /* 时间表 */
-.timetable-container {
+.time-spans-section {
   background: white;
   padding: 10px;
   border-radius: 8px;
@@ -466,7 +706,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 40px; /* 保留两个时间卡牌的高度空间 */
+  padding-bottom: 40px;
+  /* 保留两个时间卡牌的高度空间 */
 }
 
 .time-grid {
@@ -501,4 +742,8 @@ export default {
   opacity: 0.8;
 }
 
+::v-deep(.custom-message-box) {
+  margin-top: 100px !important;
+  /* 让弹窗往下移动 */
+}
 </style>
