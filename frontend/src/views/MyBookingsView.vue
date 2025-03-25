@@ -19,15 +19,14 @@
 
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
           <!---->
-          <div
-            v-for="booking in paginatedBookings"
-            :key="booking.booking_id"
-            class="booking-card"
-            :class="[
-              isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
-              getRoleClass(booking.user_role)
-            ]"
-          >
+          <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card" :class="[
+            isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
+            getRoleClass(booking.user_role)
+          ]">
+            <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
+              :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
+              Cancel Booking
+            </el-button>
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
@@ -55,7 +54,8 @@
               <div class="time-range">
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
-                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time)) }}</span>
+                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time))
+                    }}</span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
@@ -97,7 +97,7 @@ export default {
       role: '',
       bookings: [],
       currentPage: 1,
-      itemsPerPage: 5,
+      itemsPerPage: 8,
       loading: false,
       error: null
     };
@@ -121,7 +121,7 @@ export default {
 
     parseToken(token) {
       try {
-        const base64Url = token.split(".")[1];  
+        const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
@@ -238,13 +238,14 @@ export default {
   border-left-color: #ea6bcd !important;
   background-color: #f5e5ef !important;
 }
+
 .my-bookings-container {
   width: 100%;
   min-height: 100vh;
   padding: 0 1.5rem;
   margin: 0 auto;
   background: #f8f9fa;
-  left:0%
+  left: 0%
 }
 
 
@@ -394,6 +395,7 @@ export default {
   background: #ff5252;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
+
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -401,6 +403,7 @@ export default {
   gap: 10px;
   margin-top: 20px;
 }
+
 .pagination-controls button {
   padding: 5px 10px;
   border: none;
@@ -409,10 +412,12 @@ export default {
   cursor: pointer;
   border-radius: 5px;
 }
+
 .pagination-controls button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
 .loading-state {
   text-align: center;
   padding: 4rem 0;
