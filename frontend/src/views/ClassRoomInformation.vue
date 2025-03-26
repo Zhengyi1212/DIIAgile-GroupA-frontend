@@ -80,22 +80,26 @@
 
         <!-- Time Spans Section - Now full width and aligned -->
         <div v-if="selectedRoom" class="time-spans-container">
-          <div class="time-spans-section">
-            <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
-            <div class="time-grid">
-              <div 
-                v-for="timeSpan in timeSpans" 
-                :key="timeSpan.start_time" 
-                class="time-slot"
-                :class="{ available: timeSpan.is_available, booked: !timeSpan.is_available }"
-                @click="handleTimeSlotClick(timeSpan)"
-              >
-                <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
-                <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div class="time-spans-section">
+    <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
+    <div class="time-grid">
+      <div 
+        v-for="timeSpan in timeSpans" 
+        :key="timeSpan.start_time" 
+        class="time-slot"
+        :class="{ 
+          'available': timeSpan.is_available, 
+          'booked': !timeSpan.is_available,
+          'clickable': timeSpan.is_available
+        }"
+        @click="timeSpan.is_available ? handleTimeSlotClick(timeSpan) : null"
+      >
+        <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
+        <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
+      </div>
+    </div>
+  </div>
+</div>
       </main>
     </el-main>
   </el-container>
@@ -201,7 +205,7 @@ export default {
         if (data.success) {
           // Update the rooms variable with the retrieved classrooms
           this.rooms = data.classrooms;
-          alert("Get classrooms successful!");
+         
         } else {
           // Handle failure case
           alert("Classroom information retrieval failure: " + data.message);
@@ -345,7 +349,7 @@ export default {
       return `${formatTime(start)} - ${formatTime(end)}`;
     },
 
-
+    // get the information of selected room from backend
     async selectRoom(room) {
       this.selectedRoom = room; // Store the selected room
       try {

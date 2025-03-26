@@ -23,7 +23,7 @@
             isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
             getRoleClass(booking.user_role)
           ]">
-            <el-button v-if="this.role === 'admin'" class="cancel-button"
+            <el-button class="cancel-button"
               @click="handleCancelBooking(booking.booking_id)"
               :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
               Cancel
