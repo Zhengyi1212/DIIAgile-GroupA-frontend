@@ -6,14 +6,22 @@
       <!-- Step 1: Email input -->
       <div v-if="step === 1" class="form-section">
         <input v-model="email" type="email" placeholder="Enter your email" />
-        <button @click="sendCode">Send Verification Code</button>
+        <button @click="sendCode" :disabled="countdown > 0">
+          {{ countdown > 0 ? `Resend (${countdown}s)` : "Send Verification Code" }}
+        </button>
       </div>
 
       <!-- Step 2: Enter code -->
-      <div v-if="step === 2" class="form-section">
-        <input v-model="code" placeholder="Enter the code sent to your email" />
-        <button @click="verifyCode">Verify Code</button>
-      </div>
+<div v-if="step === 2" class="form-section">
+  <div class="code-input-row">
+    <input v-model="code" placeholder="Enter the code sent to your email" />
+    <button @click="sendCode" :disabled="countdown > 0" class="resend-btn">
+      {{ countdown > 0 ? `(${countdown}s)` : "Resend" }}
+    </button>
+  </div>
+  <button @click="verifyCode">Verify Code</button>
+</div>
+
 
       <!-- Step 3: Reset password -->
       <div v-if="step === 3" class="form-section">
@@ -34,6 +42,8 @@ export default {
       code: "",
       newPassword: "",
       confirmPassword: "",
+      countdown: 0,
+      countdownTimer: null,
     };
   },
   methods: {
@@ -47,10 +57,12 @@ export default {
       if (data.success) {
         alert("Code sent to email.");
         this.step = 2;
+        this.startCountdown();
       } else {
         alert(data.message);
       }
     },
+
     async verifyCode() {
       const res = await fetch("http://127.0.0.1:5000/forgot/verify-code", {
         method: "POST",
@@ -60,13 +72,15 @@ export default {
       const data = await res.json();
       if (data.success) {
         this.step = 3;
+        this.stopCountdown();
       } else {
         alert(data.message);
       }
     },
+
     async resetPassword() {
       if (this.newPassword !== this.confirmPassword) {
-        alert("Passwords do not match. Please re-enter.");
+        alert("Passwords do not match.");
         return;
       }
 
@@ -77,7 +91,6 @@ export default {
           email: this.email,
           code: this.code,
           new_password: this.newPassword,
-          confirm_password:this.confirmPassword
         }),
       });
       const data = await res.json();
@@ -88,6 +101,25 @@ export default {
         alert(data.message);
       }
     },
+
+    startCountdown() {
+      this.countdown = 60;
+      this.countdownTimer = setInterval(() => {
+        if (this.countdown > 0) {
+          this.countdown--;
+        } else {
+          clearInterval(this.countdownTimer);
+        }
+      }, 1000);
+    },
+
+    stopCountdown() {
+      clearInterval(this.countdownTimer);
+      this.countdown = 0;
+    },
+  },
+  beforeUnmount() {
+    this.stopCountdown();
   },
 };
 </script>
@@ -150,8 +182,27 @@ button {
   transition: background-color 0.3s ease;
 }
 
-button:hover {
+button:hover:enabled {
   background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+.code-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.code-input-row input {
+  flex: 1;
+}
+
+.resend-btn {
+  white-space: nowrap;
+  padding: 12px 16px;
 }
 
 @media (max-width: 480px) {
