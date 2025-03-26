@@ -23,11 +23,7 @@
             isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
             getRoleClass(booking.user_role)
           ]">
-            <el-button class="cancel-button"
-              @click="handleCancelBooking(booking.booking_id)"
-              :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
-              Cancel
-            </el-button>
+
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
@@ -63,6 +59,10 @@
                   <span class="time-label">End Time</span>
                   <span class="time-value">{{ formatDateTime(getEndTime(booking.classroom_details.start_time)) }}</span>
                 </div>
+                <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
+                  :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
+                  Cancel
+                </el-button>
               </div>
             </div>
           </div>
