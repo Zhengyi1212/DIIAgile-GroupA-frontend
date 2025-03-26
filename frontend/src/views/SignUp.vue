@@ -24,7 +24,17 @@
   </button>
   <p v-if="codeSent" style="color: green; font-size: 0.9em;">✔ Code has been sent to your email</p>
 </div>
-
+          <!-- Invite Code Input -->
+          <div class="form-row">
+            <label for="inviteCode">Invite Code</label>
+            <input
+              id="inviteCode"
+              v-model="inviteCode"
+              type="text"
+              placeholder="Enter invite code (optional)"
+            >
+          </div>
+          <!-- Verify Code Input -->
 
 
 
@@ -64,17 +74,7 @@
             >
           </div>
   
-          <!-- Invite Code Input -->
-          <div class="form-row">
-            <label for="inviteCode">Invite Code</label>
-            <input
-              id="inviteCode"
-              v-model="inviteCode"
-              type="text"
-              placeholder="Enter invite code (optional)"
-            >
-          </div>
-          <!-- Verify Code Input -->
+         
 <div class="form-row">
   <label for="code">Verification Code</label>
   <input id="code" v-model="code" type="text" placeholder="Enter verification code" required>

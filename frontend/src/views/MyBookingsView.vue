@@ -23,7 +23,8 @@
             isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
             getRoleClass(booking.user_role)
           ]">
-            <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
+            <el-button v-if="this.role === 'admin'" class="cancel-button"
+              @click="handleCancelBooking(booking.booking_id)"
               :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
               Cancel
             </el-button>
@@ -55,7 +56,7 @@
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
                   <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time))
-                    }}</span>
+                  }}</span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
@@ -110,7 +111,7 @@ export default {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       return this.bookings.slice(start, start + this.itemsPerPage);
     },
-    
+
 
   },
   methods: {
@@ -120,10 +121,10 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
-   sortByStartTimeReversed(bookings) {
-    return [...bookings].sort((a, b) => 
+    sortByStartTimeReversed(bookings) {
+      return [...bookings].sort((a, b) =>
         new Date(b.classroom_details.start_time) - new Date(a.classroom_details.start_time)
-    );
+      );
     },
     parseToken(token) {
       try {
@@ -137,47 +138,47 @@ export default {
     },
 
     async handleCancelBooking(booking_id) {
-       try {
-        
+      try {
+
         const cancelIndex = this.findBookingEntry(booking_id);
 
         // 3. Send cancellation to backend
         const response = await fetch('http://127.0.0.1:5000/mybookings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-               booking_id: booking_id,
-                
-            })
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            booking_id: booking_id,
+
+          })
         });
         // get response from backend
         const responseData = await response.json();
         //update in the list, simply remove??????
         if (responseData.success == true) {
           alert(responseData.message);
-          this.bookings.splice(cancelIndex,1)
+          this.bookings.splice(cancelIndex, 1)
           console.log('Deleted!')
         } else {
-          alert ('Fail to cancel a booking record.')
+          alert('Fail to cancel a booking record.')
         }
         // 4. Update UI state (remove booking)
-        
-    } catch (error) {
+
+      } catch (error) {
         console.error('Cancellation error:', error);
         alert('Failed to cancel booking');
         // Rollback local availability change if needed
-    }
-    },
-
-    findBookingEntry(booking_id){
-      for(let i = 0;i < this.bookings.length;i++){
-        if (this.bookings[i]["booking_id"] == booking_id)
-           return i
       }
     },
-    
+
+    findBookingEntry(booking_id) {
+      for (let i = 0; i < this.bookings.length; i++) {
+        if (this.bookings[i]["booking_id"] == booking_id)
+          return i
+      }
+    },
+
 
     isPastBooking(start_time) {
       if (!start_time) return true;
@@ -233,7 +234,7 @@ export default {
         const response = await fetch(`http://127.0.0.1:5000/mybookings?email=${encodeURIComponent(userInfo.email)}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-          
+
         });
 
         const data = await response.json();
@@ -241,7 +242,7 @@ export default {
           //console.log(data.booking[1])
           this.bookings = this.sortByStartTimeReversed(data.bookings);
           console.log(this.bookings[1])
-          
+
         } else {
           this.error = data.message || "Failed to fetch bookings.";
         }
