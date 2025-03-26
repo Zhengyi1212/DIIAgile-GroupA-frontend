@@ -15,17 +15,18 @@
           @submit.prevent="handleRegister"
         > 
 
-          <!-- Email Input -->
-          <div class="form-row">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              v-model="email"
-              type="text"
-              placeholder="Enter your Dundee email"
-              required
-            >
-          </div>
+         <!-- Email Input -->
+<div class="form-row">
+  <label for="email">Email</label>
+  <input id="email" v-model="email" type="text" placeholder="Enter your Dundee email" required />
+  <button type="button" class="code-btn" @click="sendCode" :disabled="!email || codeSent">
+    {{ codeSent ? "Code Sent" : "Send Code" }}
+  </button>
+  <p v-if="codeSent" style="color: green; font-size: 0.9em;">✔ Code has been sent to your email</p>
+</div>
+
+
+
 
           <!-- Username Input -->
           <div class="form-row">
@@ -73,7 +74,13 @@
               placeholder="Enter invite code (optional)"
             >
           </div>
-  
+          <!-- Verify Code Input -->
+<div class="form-row">
+  <label for="code">Verification Code</label>
+  <input id="code" v-model="code" type="text" placeholder="Enter verification code" required>
+</div>
+
+
           <!-- Submit and Reset Buttons -->
           <div class="form-actions">
             <button
@@ -119,7 +126,9 @@
         username: "",
         password: "",
         confirmPassword: "",
-        inviteCode: "", 
+        inviteCode: "",
+        code: "",
+        codeSent: false, 
         images : [ 
         require('@/assets/csu1.jpg'),
         require('@/assets/csu2.jpg'),
@@ -151,7 +160,26 @@
       }, 3000); 
       
      },
-
+     sendCode() {
+      fetch("http://127.0.0.1:5000/signup/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: this.email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Verification code sent to your email.");
+          this.codeSent = true;
+        } else {
+          alert("Failed to send code: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error("Send code error:", err);
+        alert("Error sending code");
+      });
+    },
       handleRegister() {
         if (this.password !== this.confirmPassword) {
           alert("The passwords do not match. Please try again!");
@@ -176,6 +204,7 @@
           email: this.email,
           username: this.username,
           password: this.password,
+          code: this.code,
           role: role, // Role set based on invite code
         };
   
@@ -213,6 +242,8 @@
         this.password = "";
         this.confirmPassword = "";
         this.inviteCode = ""; 
+        this.code = "";
+        this.codeSent = false;
       },
 
       goToLogin() {
@@ -336,6 +367,19 @@
   .login-link:hover {
     text-decoration: underline;
   }
+  .code-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.code-btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
   </style>
   
 
