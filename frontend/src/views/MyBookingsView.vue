@@ -48,6 +48,14 @@
                 </div>
               </div>
 
+              <div class="info-item">
+                <span class="icon">📧</span>
+                <div class="info-content">
+                  <span class="info-label">Owner Email: </span>
+                  <span class="info-value">{{ booking.user_email }}</span>
+                </div>
+              </div>
+
               <div class="time-range">
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
@@ -99,6 +107,7 @@ export default {
       bookings: [],
       currentPage: 1,
       itemsPerPage: 10,
+      itemsPerPage: 10,
       loading: false,
       error: null
     };
@@ -128,6 +137,7 @@ export default {
     },
     parseToken(token) {
       try {
+       
         const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
@@ -186,9 +196,11 @@ export default {
       return startDate.getTime() < Date.now();
     },
 
+
     getCorrectTime(startTime) {
       if (!startTime) return new Date();
       const start = new Date(startTime);
+      start.setHours(start.getHours() - 8);
       start.setHours(start.getHours() - 8);
       return start;
     },
@@ -197,8 +209,29 @@ export default {
       if (!startTime) return new Date();
       const start = new Date(startTime);
       start.setHours(start.getHours() - 6);
+      start.setHours(start.getHours() - 6);
       return start;
     },
+
+    formatDateTime(datetime) {
+      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
+    },
+
+    getRoleClass(role) {
+      switch (role) {
+        case 'Student':
+          return 'student-card';
+        case 'Lecture':
+          return 'teacher-card';
+        case 'Tutor':
+          return 'teacher-card';
+        case 'Admin':
+          return 'admin-card';
+        default:
+          return '';
+      }
+    },
+
 
     formatDateTime(datetime) {
       return datetime ? new Date(datetime).toLocaleString() : 'N/A';
@@ -229,13 +262,15 @@ export default {
         this.loading = false;
         return;
       }
-
+    
       try {
+        
         const response = await fetch(`http://127.0.0.1:5000/mybookings?email=${encodeURIComponent(userInfo.email)}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
 
         });
+
 
         const data = await response.json();
         if (response.ok) {
@@ -253,11 +288,13 @@ export default {
       }
     },
 
+
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
       }
     },
+
 
     nextPage() {
       if (this.currentPage < this.totalPages) {
@@ -292,13 +329,29 @@ export default {
   background-color: #f5e5ef !important;
 }
 
+.student-card {
+  border-left-color: #366bf1 !important;
+  background-color: #dfe3ff !important;
+}
+
+.teacher-card {
+  border-left-color: #66bb6a !important;
+  background-color: #e8f5e9 !important;
+}
+
+.admin-card {
+  border-left-color: #ea6bcd !important;
+  background-color: #f5e5ef !important;
+}
+
 .my-bookings-container {
   width: 100%;
   min-height: 100vh;
   padding: 0 1.5rem;
   margin: 0 auto;
   background: #f8f9fa;
-  left: 0%
+  left: 0%;
+ 
 }
 
 
@@ -339,6 +392,8 @@ export default {
 }
 
 .past-booking {
+  opacity: 0.4;
+  border-left-color: #f8f9f9;
   opacity: 0.4;
   border-left-color: #f8f9f9;
 }
@@ -449,6 +504,7 @@ export default {
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
 
+
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -456,6 +512,7 @@ export default {
   gap: 10px;
   margin-top: 20px;
 }
+
 
 .pagination-controls button {
   padding: 5px 10px;
@@ -466,10 +523,12 @@ export default {
   border-radius: 5px;
 }
 
+
 .pagination-controls button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
 
 .loading-state {
   text-align: center;
@@ -497,6 +556,7 @@ export default {
 }
 
 
+
 .empty-state {
   text-align: center;
   padding: 4rem 0;
@@ -515,6 +575,7 @@ export default {
 .empty-hint {
   color: #7f8c8d;
 }
+
 
 
 @media (max-width: 768px) {
@@ -542,3 +603,4 @@ export default {
   }
 }
 </style>
+
