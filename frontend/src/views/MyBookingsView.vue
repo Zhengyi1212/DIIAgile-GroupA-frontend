@@ -25,7 +25,7 @@
           ]">
             <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
               :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
-              Cancel Booking
+              Cancel
             </el-button>
             <div class="card-header">
               <h3 class="room-name">
@@ -97,7 +97,7 @@ export default {
       role: '',
       bookings: [],
       currentPage: 1,
-      itemsPerPage: 8,
+      itemsPerPage: 10,
       loading: false,
       error: null
     };
@@ -109,7 +109,9 @@ export default {
     paginatedBookings() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       return this.bookings.slice(start, start + this.itemsPerPage);
-    }
+    },
+    
+
   },
   methods: {
     getInfor() {
@@ -118,7 +120,11 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
-
+   sortByStartTimeReversed(bookings) {
+    return [...bookings].sort((a, b) => 
+        new Date(b.classroom_details.start_time) - new Date(a.classroom_details.start_time)
+    );
+    },
     parseToken(token) {
       try {
         const base64Url = token.split(".")[1];
@@ -129,6 +135,49 @@ export default {
         return null;
       }
     },
+
+    async handleCancelBooking(booking_id) {
+       try {
+        
+        const cancelIndex = this.findBookingEntry(booking_id);
+
+        // 3. Send cancellation to backend
+        const response = await fetch('http://127.0.0.1:5000/mybookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+               booking_id: booking_id,
+                
+            })
+        });
+        // get response from backend
+        const responseData = await response.json();
+        //update in the list, simply remove??????
+        if (responseData.success == true) {
+          alert(responseData.message);
+          this.bookings.splice(cancelIndex,1)
+          console.log('Deleted!')
+        } else {
+          alert ('Fail to cancel a booking record.')
+        }
+        // 4. Update UI state (remove booking)
+        
+    } catch (error) {
+        console.error('Cancellation error:', error);
+        alert('Failed to cancel booking');
+        // Rollback local availability change if needed
+    }
+    },
+
+    findBookingEntry(booking_id){
+      for(let i = 0;i < this.bookings.length;i++){
+        if (this.bookings[i]["booking_id"] == booking_id)
+           return i
+      }
+    },
+    
 
     isPastBooking(start_time) {
       if (!start_time) return true;
@@ -181,15 +230,18 @@ export default {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/mybookings", {
-          method: "POST",
+        const response = await fetch(`http://127.0.0.1:5000/mybookings?email=${encodeURIComponent(userInfo.email)}`, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userInfo.email })
+          
         });
 
         const data = await response.json();
         if (response.ok) {
-          this.bookings = data.bookings;
+          //console.log(data.booking[1])
+          this.bookings = this.sortByStartTimeReversed(data.bookings);
+          console.log(this.bookings[1])
+          
         } else {
           this.error = data.message || "Failed to fetch bookings.";
         }
