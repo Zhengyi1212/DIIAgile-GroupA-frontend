@@ -15,17 +15,18 @@
           @submit.prevent="handleRegister"
         > 
 
-          <!-- Email Input -->
-          <div class="form-row">
-            <label for="email">Email</label>
-            <input
-              id="email"
-              v-model="email"
-              type="text"
-              placeholder="Enter your Dundee email"
-              required
-            >
-          </div>
+         <!-- Email Input -->
+<div class="form-row">
+  <label for="email">Email</label>
+  <input id="email" v-model="email" type="text" placeholder="Enter your Dundee email" required />
+  <button type="button" class="code-btn" @click="sendCode" :disabled="!email || codeSent">
+    {{ codeSent ? "Code Sent" : "Send Code" }}
+  </button>
+  <p v-if="codeSent" style="color: green; font-size: 0.9em;">✔ Code has been sent to your email</p>
+</div>
+
+
+
 
           <!-- Username Input -->
           <div class="form-row">
@@ -73,7 +74,13 @@
               placeholder="Enter invite code (optional)"
             >
           </div>
-  
+          <!-- Verify Code Input -->
+<div class="form-row">
+  <label for="code">Verification Code</label>
+  <input id="code" v-model="code" type="text" placeholder="Enter verification code" required>
+</div>
+
+
           <!-- Submit and Reset Buttons -->
           <div class="form-actions">
             <button
@@ -119,7 +126,9 @@
         username: "",
         password: "",
         confirmPassword: "",
-        inviteCode: "", 
+        inviteCode: "",
+        code: "",
+        codeSent: false, 
         images : [ 
         require('@/assets/csu1.jpg'),
         require('@/assets/csu2.jpg'),
@@ -151,7 +160,26 @@
       }, 3000); 
       
      },
-
+     sendCode() {
+      fetch("http://127.0.0.1:5000/signup/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: this.email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Verification code sent to your email.");
+          this.codeSent = true;
+        } else {
+          alert("Failed to send code: " + data.message);
+        }
+      })
+      .catch(err => {
+        console.error("Send code error:", err);
+        alert("Error sending code");
+      });
+    },
       handleRegister() {
         if (this.password !== this.confirmPassword) {
           alert("The passwords do not match. Please try again!");
@@ -178,6 +206,7 @@
           email: this.email,
           username: this.username,
           password: this.password,
+          code: this.code,
           role: role, // Role set based on invite code
         };
   
@@ -215,6 +244,8 @@
         this.password = "";
         this.confirmPassword = "";
         this.inviteCode = ""; 
+        this.code = "";
+        this.codeSent = false;
       },
 
       goToLogin() {
@@ -255,111 +286,102 @@
   white-space: nowrap;
 }
 
-/* Centering the Signup Container */
-.register-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Larger Signup Box with Enhanced Shadows */
-.register-container {
-  position: fixed;
-  top: 140px;
-  padding: 5px 30px 5px;
-  border-radius: 20px; /* More rounded edges */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow */
-  background-color: rgba(255, 255, 255, 0.8);
-  width: 90%;
-  max-width: 550px; /* Increased max width */
-  text-align: center;
-}
-
-/* Bigger Signup Title */
-.register-title {
-  margin-bottom: 20px;
-  font-size: 2.2rem; /* Increased size */
-  font-weight: bold;
-  color: #333;
-}
-
-/* Improved Form Layout */
-.form-row {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-/* Larger Labels */
-.form-row label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-/* Bigger Input Fields */
-.form-row input {
-  width: 100%;
-  padding: 12px;
-  font-size: 1.1rem;
-  border: 1px solid #bbb;
-  border-radius: 8px;
-}
-
-/* Enhanced Primary Button */
-.primary-btn {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  background-color: #007bff;
+  .register-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    ;
+  }
+  
+  .register-container {
+    position: fixed;
+    padding: 15px;
+    border-radius: 10px;
+    top: 150px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color:rgba(255,255,255,0.7);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+  }
+  
+  .register-title {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #333;
+  }
+  
+  .form-row {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .form-row label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .form-row input {
+    width: 94%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .primary-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .primary-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .secondary-btn {
+    padding: 10px 20px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .secondary-btn:hover {
+    background-color: #565e64;
+  }
+  
+  .additional-info {
+    margin-top: 15px;
+    color: #555;
+  }
+  
+  .login-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login-link:hover {
+    text-decoration: underline;
+  }
+  .code-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #28a745;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background 0.3s ease-in-out, transform 0.2s;
 }
-
-.primary-btn:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+.code-btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
-
-/* Enhanced Secondary Button */
-.secondary-btn {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease-in-out, transform 0.2s;
-}
-
-.secondary-btn:hover {
-  background-color: #565e64;
-  transform: translateY(-2px);
-}
-
-/* More Visible Additional Info */
-.additional-info {
-  margin-top: 20px;
-  font-size: 1rem;
-  color: #444;
-}
-
-/* Bigger and Clearer Login Link */
-.login-link {
-  font-size: 1.2rem;
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.login-link:hover {
-  text-decoration: underline;
-}
-
   </style>
   
 

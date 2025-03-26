@@ -19,15 +19,14 @@
 
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
           <!---->
-          <div
-            v-for="booking in paginatedBookings"
-            :key="booking.booking_id"
-            class="booking-card"
-            :class="[
-              isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
-              getRoleClass(booking.user_role)
-            ]"
-          >
+          <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card" :class="[
+            isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
+            getRoleClass(booking.user_role)
+          ]">
+            <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
+              :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
+              Cancel
+            </el-button>
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
@@ -55,7 +54,8 @@
               <div class="time-range">
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
-                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time)) }}</span>
+                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time))
+                    }}</span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
@@ -97,7 +97,7 @@ export default {
       role: '',
       bookings: [],
       currentPage: 1,
-      itemsPerPage: 5,
+      itemsPerPage: 10,
       loading: false,
       error: null
     };
@@ -109,7 +109,9 @@ export default {
     paginatedBookings() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       return this.bookings.slice(start, start + this.itemsPerPage);
-    }
+    },
+    
+
   },
   methods: {
     getInfor() {
@@ -118,10 +120,14 @@ export default {
       this.username = userInfo.username;
       this.role = userInfo.role;
     },
-
+   sortByStartTimeReversed(bookings) {
+    return [...bookings].sort((a, b) => 
+        new Date(b.classroom_details.start_time) - new Date(a.classroom_details.start_time)
+    );
+    },
     parseToken(token) {
       try {
-        const base64Url = token.split(".")[1];  
+        const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
       } catch (error) {
@@ -129,6 +135,49 @@ export default {
         return null;
       }
     },
+
+    async handleCancelBooking(booking_id) {
+       try {
+        
+        const cancelIndex = this.findBookingEntry(booking_id);
+
+        // 3. Send cancellation to backend
+        const response = await fetch('http://127.0.0.1:5000/mybookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+               booking_id: booking_id,
+                
+            })
+        });
+        // get response from backend
+        const responseData = await response.json();
+        //update in the list, simply remove??????
+        if (responseData.success == true) {
+          alert(responseData.message);
+          this.bookings.splice(cancelIndex,1)
+          console.log('Deleted!')
+        } else {
+          alert ('Fail to cancel a booking record.')
+        }
+        // 4. Update UI state (remove booking)
+        
+    } catch (error) {
+        console.error('Cancellation error:', error);
+        alert('Failed to cancel booking');
+        // Rollback local availability change if needed
+    }
+    },
+
+    findBookingEntry(booking_id){
+      for(let i = 0;i < this.bookings.length;i++){
+        if (this.bookings[i]["booking_id"] == booking_id)
+           return i
+      }
+    },
+    
 
     isPastBooking(start_time) {
       if (!start_time) return true;
@@ -181,15 +230,18 @@ export default {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/mybookings", {
-          method: "POST",
+        const response = await fetch(`http://127.0.0.1:5000/mybookings?email=${encodeURIComponent(userInfo.email)}`, {
+          method: "GET",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userInfo.email })
+          
         });
 
         const data = await response.json();
         if (response.ok) {
-          this.bookings = data.bookings;
+          //console.log(data.booking[1])
+          this.bookings = this.sortByStartTimeReversed(data.bookings);
+          console.log(this.bookings[1])
+          
         } else {
           this.error = data.message || "Failed to fetch bookings.";
         }
@@ -238,13 +290,14 @@ export default {
   border-left-color: #ea6bcd !important;
   background-color: #f5e5ef !important;
 }
+
 .my-bookings-container {
   width: 100%;
   min-height: 100vh;
   padding: 0 1.5rem;
   margin: 0 auto;
   background: #f8f9fa;
-  left:0%
+  left: 0%
 }
 
 
@@ -394,6 +447,7 @@ export default {
   background: #ff5252;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 }
+
 .pagination-controls {
   display: flex;
   justify-content: center;
@@ -401,6 +455,7 @@ export default {
   gap: 10px;
   margin-top: 20px;
 }
+
 .pagination-controls button {
   padding: 5px 10px;
   border: none;
@@ -409,10 +464,12 @@ export default {
   cursor: pointer;
   border-radius: 5px;
 }
+
 .pagination-controls button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
 .loading-state {
   text-align: center;
   padding: 4rem 0;

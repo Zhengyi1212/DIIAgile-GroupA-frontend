@@ -16,6 +16,11 @@ const routes = [
         component: LoginView
     },
     {
+        path: '/verify',
+        name: 'verify',
+        component: () => import('@/views/VerifyCode.vue')
+      },
+    {
         path: '/signup',    
         component: SignUp
     },
