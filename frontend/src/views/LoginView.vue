@@ -38,6 +38,9 @@
           Don't have an account yet?
           <a href="#" class="register-link" @click="goToRegister">Register for free</a>
         </p>
+        <p class="additional-info">
+        <a class="register-link" @click="goToForgot">Retrieve password</a>
+        </p>
       </div>
     </div>
   </div>
@@ -136,6 +139,15 @@ export default {
         this.$router.push("/signup");
       }
     },
+    goToForgot() {
+      if(!this.isLoading){
+        event.preventDefault();
+        console.log("Jump to the Retrieve page");
+        this.$router.push("/forgot");
+      }
+    
+      },
+
 
     isTokenValid(token) {
       if (!token) return false;
