@@ -82,46 +82,47 @@ export default {
 
 
     async handleLogin() {
-      if (!this.email || !this.password) {
-        alert("Please enter your email and password");
-        return;
-      }
+  if (!this.email || !this.password) {
+    alert("Please enter your email and password");
+    return;
+  }
 
-      this.isLoading = true;
+  this.isLoading = true;
 
-      const loginData = {
-        email: this.email,  
-        password: this.password,
-        username: this.username,
-      };
+  const loginData = {
+    email: this.email,
+    password: this.password,
+  };
 
-      try {
-        const response = await fetch("http://127.0.0.1:5000/login", {  
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          
-          body: JSON.stringify(loginData),
-        });
+  try {
+    const response = await fetch("http://127.0.0.1:5000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginData),
+    });
 
-        const data = await response.json();
-        console.log(data);
+    const data = await response.json();
+    console.log(data);
 
-        if (data.success) {
-          localStorage.setItem("token", data.token);
-          this.checkToken();
-          alert("Login successful! Welcome "+ loginData.username + "! You are a " + loginData.role+".");
-        } else {
-          alert("Login Failure: " + data.message);
-        }
-      } catch (error) {
-        console.error("Request Error:", error);
-        alert("The login request failed, please try again later!");
-      } finally {
-        this.isLoading = false;
-      }
+    if (data.success) {
+      // ✅ 登录成功，后端已发送验证码，跳转到验证码页面
+      alert("Verification code has been sent to your email.");
+      this.$router.push({
+        path: '/verify',
+        query: { email: this.email }
+      });
+    } else {
+      alert("Login Failure: " + data.message);
     }
+  } catch (error) {
+    console.error("Request Error:", error);
+    alert("The login request failed, please try again later!");
+  } finally {
+    this.isLoading = false;
+  }
+}
     ,
     resetForm() {
       this.email = "";
