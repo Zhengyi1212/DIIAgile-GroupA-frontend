@@ -1,4 +1,4 @@
-<template>
+<template> 
   <div class="email-wrapper">
     <div class="email-container">
       <button class="back-button" @click="goBack">← Back</button>
@@ -10,6 +10,10 @@
             <span :class="['urgency-tag', repair.urgency]">{{ formatUrgency(repair.urgency) }}</span>
           </div>
           <p class="description">{{ repair.description }}</p>
+          <div v-if="['in-progress', 'resolved'].includes(repair.status)" class="feedback-section">
+            <textarea v-model="repair.feedback" placeholder="Enter feedback..." class="feedback-input"></textarea>
+            <button @click="submitFeedback(repair)" class="feedback-button"> Submit Feedback</button>
+          </div>
           <div class="repair-footer">
             <span class="reporter">Reported by: {{ repair.reporter }}</span>
             <span class="timestamp">{{ formatDate(repair.timestamp) }}</span>
@@ -40,7 +44,18 @@ export default {
   },
   methods: {
     loadRepairs() {
-      this.repairs = JSON.parse(localStorage.getItem('repairRecords') || '[]');
+      const rawData = JSON.parse(localStorage.getItem('repairRecords') || '[]');
+      const processedRepairs = [];
+  
+    for (let i = 0; i < rawData.length; i++) {
+      const originalRepair = rawData[i];
+      processedRepairs.push({
+      ...originalRepair,
+      feedback: originalRepair.feedback || ''
+    });
+  }
+  
+  this.repairs = processedRepairs;
     },
     formatUrgency(urgency) {
       const map = { low: 'Common', medium: 'Urgent', high: 'Pretty urgent' };
@@ -59,9 +74,20 @@ export default {
     },
     goBack() {
       this.$router.go(-1);
+    },
+
+  submitFeedback(repair) {
+    const allRepairs = JSON.parse(localStorage.getItem('repairRecords'));
+    const index = allRepairs.findIndex(r => r.id === repair.id);
+    if (index > -1) {
+        allRepairs[index].feedback = repair.feedback;
+        localStorage.setItem('repairRecords', JSON.stringify(allRepairs));
+        alert('Feedback submitted successfully!');
     }
-  }
-};
+    }
+  },
+}
+
 </script>
 
 <style scoped>
@@ -122,9 +148,9 @@ h2 {
 }
 
 .repair-item:hover {
-  border-color: rgba(0, 0, 0, 0.25);
+  border-color: rgba(0, 0, 0, 0.5);
   transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
 }
 
 .repair-header {
@@ -210,6 +236,41 @@ select:focus {
   border-color: #1890ff;
   outline: none;
 }
+
+.feedback-section {
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.feedback-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  height: 100px; 
+  font-family: inherit;
+  resize: none; 
+  overflow-y: auto; 
+  box-sizing: border-box; 
+}
+
+.feedback-button {
+  background: #1890ff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  float: right;
+  transition: background 0.3s ease;
+}
+
+.feedback-button:hover {
+  background: #40a9ff;
+}
+
 
 @media (max-width: 768px) {
   
