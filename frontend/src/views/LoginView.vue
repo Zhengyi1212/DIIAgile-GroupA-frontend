@@ -186,8 +186,7 @@ export default {
 .background-container {
   position: relative;
   width: 100%;
-  height: 100vh;
-  /* Full viewport height */
+  height: 100vh; /* Full viewport height */
   background-image: v-bind(currentUrl);
   background-size: cover;
   background-position: center;
@@ -195,100 +194,118 @@ export default {
   background-repeat: no-repeat;
 }
 
+/* Enlarged Title for Better Visibility */
 .top-style {
   display: flex;
   position: fixed;
   top: 0px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 2.0rem;
+  font-size: 3rem; /* Increased size */
   font-weight: bold;
   color: #4A90E2;
   text-align: center;
   font-family: 'Poppins', sans-serif;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
 }
 
-
+/* Centering the login container */
 .login-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-
-
 }
 
+/* Larger Login Box with Enhanced Shadows */
 .login-container {
   position: fixed;
   top: 200px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.7);
-  width: 100%;
-  max-width: 400px;
+  padding: 30px; /* Increased padding */
+  border-radius: 15px; /* More rounded edges */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+  background-color: rgba(255, 255, 255, 0.8);
+  width: 90%;
+  max-width: 500px; /* Increased max width */
   text-align: center;
 }
 
+/* Bigger Login Title */
 .login-title {
-  margin-bottom: 20px;
-  font-size: 1.8rem;
+  margin-bottom: 25px;
+  font-size: 2.2rem; /* Increased size */
+  font-weight: bold;
   color: #333;
 }
 
+/* Improved Form Layout */
 .form-row {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   text-align: left;
 }
 
+/* Larger Labels */
 .form-row label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: bold;
+  font-size: 1.1rem;
 }
 
+/* Bigger Input Fields */
 .form-row input {
-  width: 94%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: 1px solid #bbb;
+  border-radius: 8px;
 }
 
+/* Enhanced Primary Button */
 .primary-btn {
-  padding: 10px 20px;
-  margin-right: 10px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s;
 }
 
 .primary-btn:hover {
   background-color: #0056b3;
+  transform: translateY(-2px);
 }
 
+/* Enhanced Secondary Button */
 .secondary-btn {
-  padding: 10px 20px;
+  padding: 12px 24px;
+  font-size: 1.1rem;
   background-color: #6c757d;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.3s ease-in-out, transform 0.2s;
 }
 
 .secondary-btn:hover {
   background-color: #565e64;
+  transform: translateY(-2px);
 }
 
+/* More Visible Additional Info */
 .additional-info {
-  margin-top: 15px;
-  color: #555;
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #444;
 }
 
+/* Bigger and Clearer Register Link */
 .register-link {
+  font-size: 1.2rem;
   color: #007bff;
   text-decoration: none;
   font-weight: bold;
@@ -297,4 +314,5 @@ export default {
 .register-link:hover {
   text-decoration: underline;
 }
+
 </style>

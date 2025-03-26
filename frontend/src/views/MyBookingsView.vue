@@ -5,7 +5,6 @@
     </el-header>
     <el-main>
       <div class="my-bookings-container">
-        
         <h1 class="page-title">My Bookings</h1>
 
         <div v-if="loading" class="loading-state">
@@ -19,8 +18,16 @@
         </div>
 
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
-          <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card"
-            :class="{ 'past-booking': isPastBooking(booking.classroom_details.start_time), 'active-booking': !isPastBooking(booking.classroom_details.start_time) }">
+          <!---->
+          <div
+            v-for="booking in paginatedBookings"
+            :key="booking.booking_id"
+            class="booking-card"
+            :class="[
+              isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
+              getRoleClass(booking.user_role)
+            ]"
+          >
             <div class="card-header">
               <h3 class="room-name">
                 <span class="icon">🏫</span>
@@ -36,8 +43,14 @@
                   <span class="info-value">{{ booking.classroom_details.building }}</span>
                 </div>
               </div>
-              
-            <!--add booking owner' username and email-->
+
+              <div class="info-item">
+                <span class="icon">📧</span>
+                <div class="info-content">
+                  <span class="info-label">Owner Email: </span>
+                  <span class="info-value">{{ booking.user_email }}</span>
+                </div>
+              </div>
 
               <div class="time-range">
                 <div class="time-block">
@@ -50,6 +63,7 @@
                   <span class="time-value">{{ formatDateTime(getEndTime(booking.classroom_details.start_time)) }}</span>
                 </div>
               </div>
+              <button class="cancel-button" @click="cancelBooking(booking.booking_id)">Cancel Booking</button>
             </div>
           </div>
         </transition-group>
@@ -122,20 +136,40 @@ export default {
       const startDate = new Date(start_time);
       return startDate.getTime() < Date.now();
     },
+
     getCorrectTime(startTime) {
       if (!startTime) return new Date();
       const start = new Date(startTime);
-      start.setHours(start.getHours() -8);
+      start.setHours(start.getHours() - 8);
       return start;
     },
 
     getEndTime(startTime) {
       if (!startTime) return new Date();
       const start = new Date(startTime);
-      start.setHours(start.getHours() -6);
+      start.setHours(start.getHours() - 6);
       return start;
     },
-    
+
+    formatDateTime(datetime) {
+      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
+    },
+
+    getRoleClass(role) {
+      switch (role) {
+        case 'Student':
+          return 'student-card';
+        case 'Lecture':
+          return 'teacher-card';
+        case 'Tutor':
+          return 'teacher-card';
+        case 'Admin':
+          return 'admin-card';
+        default:
+          return '';
+      }
+    },
+
     async getBookingsInformation() {
       this.loading = true;
       this.error = null;
@@ -146,14 +180,14 @@ export default {
         this.loading = false;
         return;
       }
-      
+
       try {
         const response = await fetch("http://127.0.0.1:5000/mybookings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: userInfo.email })
         });
-        
+
         const data = await response.json();
         if (response.ok) {
           this.bookings = data.bookings;
@@ -165,17 +199,37 @@ export default {
       } finally {
         this.loading = false;
       }
-    },
+    },async cancelBooking(bookingId) {
+  const confirmCancel = confirm("Are you sure you want to cancel this booking?");
+  if (!confirmCancel) return;
 
-    formatDateTime(datetime) {
-      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
-    },
-    
+  try {
+    const response = await fetch("http://127.0.0.1:5000/mybookings/cancel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ booking_id: bookingId })
+    });
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      alert("Booking cancelled successfully.");
+      this.getBookingsInformation(); // 重新加载预约列表
+    } else {
+      alert("Failed to cancel booking: " + (data.message || "Unknown error"));
+    }
+  } catch (error) {
+    console.error("Cancel booking error:", error);
+    alert("Request failed. Please try again later.");
+  }
+},
+
+
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
       }
     },
+
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
@@ -194,6 +248,20 @@ export default {
 
 
 <style scoped>
+.student-card {
+  border-left-color: #366bf1 !important;
+  background-color: #dfe3ff !important;
+}
+
+.teacher-card {
+  border-left-color: #66bb6a !important;
+  background-color: #e8f5e9 !important;
+}
+
+.admin-card {
+  border-left-color: #ea6bcd !important;
+  background-color: #f5e5ef !important;
+}
 .my-bookings-container {
   width: 100%;
   min-height: 100vh;
@@ -241,8 +309,8 @@ export default {
 }
 
 .past-booking {
-  opacity: 0.6;
-  border-left-color: #95a5a6;
+  opacity: 0.4;
+  border-left-color: #f8f9f9;
 }
 
 
@@ -394,7 +462,7 @@ export default {
   }
 }
 
-/* 空状态 */
+
 .empty-state {
   text-align: center;
   padding: 4rem 0;
@@ -414,7 +482,7 @@ export default {
   color: #7f8c8d;
 }
 
-/* 响应式设计 */
+
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem;
