@@ -48,13 +48,7 @@
                 </div>
               </div>
 
-              <div class="info-item">
-                <span class="icon">📧</span>
-                <div class="info-content">
-                  <span class="info-label">Owner Email: </span>
-                  <span class="info-value">{{ booking.user_email }}</span>
-                </div>
-              </div>
+              
 
               <div class="time-range">
                 <div class="time-block">
