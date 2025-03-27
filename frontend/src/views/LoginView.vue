@@ -209,6 +209,76 @@ export default {
   background-repeat: no-repeat;
 }
 
+@media (max-width: 768px) {
+  .background-container {
+    flex-direction: column;
+    padding-top: 60px;
+    height: auto;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .top-style {
+    font-size: 1.8rem !important;
+    margin-bottom: 10px;
+    position: static;
+    transform: none;
+    text-align: center;
+    width: 100%;
+  }
+
+  .top-style h1 {
+    font-size: 1.8rem !important;
+    text-align: center;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 768px) {
+  .top-style {
+    position: static;
+    transform: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  .top-style h1 {
+    margin: 0;
+    font-size: 1.8rem !important;
+  }
+}
+
+
+  .login-wrapper {
+    padding: 0 16px;
+    align-items: flex-start;
+    height: auto;
+  }
+
+  .login-container {
+    width: 100%;
+    max-width: 360px;
+    padding: 20px;
+    margin: 0 auto;
+    border-radius: 12px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+  }
+}
+
 /* Enlarged Title for Better Visibility */
 .top-style {
   display: flex;
