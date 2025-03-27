@@ -57,12 +57,14 @@
           <!-- Classroom Grid -->
           <div class="classroom-grid">
             <div 
-              v-for="room in paginatedRooms" 
-              :key="room.classroom_name + room.date" 
-              class="classroom-card"
-              :class="{ selected: selectedRoom && selectedRoom.classroom_name === room.classroom_name }"
-              @click="selectRoom(room)"
-            >
+  v-for="room in paginatedRooms" 
+  :key="room.classroom_name + room.date" 
+  class="classroom-card"
+  :class="{ selected: selectedRoom && selectedRoom.classroom_name === room.classroom_name }"
+  @click="selectRoom(room)"
+  @contextmenu.prevent="handleRightClick(room, $event)"
+>
+
               <div class="card-header">
                 <h3 class="room-name">{{ room.classroom_name }}</h3>
                 <span class="capacity-badge">{{ room.capacity }} people</span>
@@ -101,6 +103,16 @@
   </div>
 </div>
       </main>
+  <!-- Right-click context menu -->
+  <ul 
+        v-if="contextMenuVisible"
+        class="context-menu"
+        :style="contextMenuStyle"
+        @click.stop
+      >
+        <li @click="handleModifyClick">🛠 Modify Room</li>
+      </ul>
+
     </el-main>
   </el-container>
 </template>
@@ -132,6 +144,10 @@ export default {
       timeSpans: [
 
       ],
+      contextMenuVisible: false,
+contextMenuStyle: { top: '0px', left: '0px' },
+contextMenuRoom: null
+
     };
   },
 
@@ -179,9 +195,29 @@ export default {
   mounted() {
     this.getInfor();
     this.getClassroomInformationFromDB()
+    document.addEventListener("click", this.hideContextMenu);
   },
 
   methods: {
+    handleRightClick(room, event) {
+  if (this.role !== 'Admin') return;
+  this.contextMenuRoom = room;
+  this.contextMenuStyle = {
+    top: `${event.clientY}px`,
+    left: `${event.clientX}px`
+  };
+  this.contextMenuVisible = true;
+},
+
+handleModifyClick() {
+  this.selectedRoom = this.contextMenuRoom;
+  this.contextMenuVisible = false;
+  this.modifyRoom();
+},
+
+hideContextMenu() {
+  this.contextMenuVisible = false;
+},
 
 
     async getClassroomInformationFromDB() {
@@ -251,47 +287,24 @@ export default {
     handleTimeSlotClick(slot) {
       if (!this.selectedRoom) return;
 
-      if (this.role === "Admin") {
-        // Admin 角色，提供 "修改教室" 和 "预约" 两个选项
-        ElMessageBox({
-          title: "Admin Actions",
-          message: `You have selected <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>. 
-                <br/>Would you like to modify this room or proceed with booking?`,
-          dangerouslyUseHTMLString: true,
-          showCancelButton: true,
-          confirmButtonText: "Modify Room",
-          cancelButtonText: "Reserve",
-          customClass: "custom-message-box",
-        })
-          .then(() => {
-            // 选择 "Modify Room" 进入教室修改模式
-            this.modifyRoom();
-          })
-          .catch(() => {
-            // 选择 "Reserve" 进行预约
-            this.confirmBooking(slot);
-          });
-      } else {
-        // 普通用户，直接弹出预约确认
-        ElMessageBox.confirm(
-          `Do you want to book <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>?`,
-          "Confirm Booking",
-          {
-            dangerouslyUseHTMLString: true,
-            confirmButtonText: "Yes, Book it!",
-            cancelButtonText: "Cancel",
-            type: "info",
-            customClass: "custom-message-box",
-            center: true
-          }
-        )
-          .then(() => {
-            this.confirmBooking(slot);
-          })
-          .catch(() => {
-            // 用户取消预约
-          });
-      }
+     // ✅ 保留下面这一段，作用一致
+ElMessageBox.confirm(
+  `Do you want to book <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>?`,
+  "Confirm Booking",
+  {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: "Yes, Book it!",
+    cancelButtonText: "Cancel",
+    type: "info",
+    customClass: "custom-message-box",
+    center: true
+  }
+)
+.then(() => {
+  this.confirmBooking(slot);
+})
+.catch(() => {});
+
     },
 
     async confirmBooking(slot) {
@@ -371,7 +384,8 @@ export default {
         console.log("Time Spans Response:", data);
 
         if (data.success) {
-          this.timeSpans = data.time_spans; // Store the time spans
+          this.timeSpans = Array.isArray(data.time_spans) ? data.time_spans.filter(ts => ts && ts.start_time) : [];
+
         } else {
           alert("Failed to fetch time spans: " + data.message);
         }
@@ -781,5 +795,31 @@ export default {
     align-items: flex-start;
     border-radius: 15px; /* Rounded group */
   }
+  
 }
+.context-menu {
+  position: fixed;
+  z-index: 9999;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 160px;
+  list-style: none;
+  margin: 0;
+  user-select: none;
+}
+
+.context-menu li {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.context-menu li:hover {
+  background-color: #f0f0f0;
+}
+
 </style>
