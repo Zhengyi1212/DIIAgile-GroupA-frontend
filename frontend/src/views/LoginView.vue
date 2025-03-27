@@ -38,6 +38,12 @@
           Don't have an account yet?
           <a href="#" class="register-link" @click="goToRegister">Register for free</a>
         </p>
+        <p class="additional-info">
+          Forget your password?
+          <a class="register-link" @click="goToForgot">Reset password</a>
+        </p>
+
+
       </div>
     </div>
   </div>
@@ -73,60 +79,68 @@ export default {
     startImageLoop() {
       setInterval(() => {
         this.currentIndex = (this.currentIndex + 1) % this.images.length;
-       
         this.currentUrl = this.images[this.currentIndex];
-        
+
       }, 4000);
 
     },
 
 
     async handleLogin() {
-  if (!this.email || !this.password) {
-    alert("Please enter your email and password");
-    return;
-  }
+      if (!this.email || !this.password) {
+        alert("Please enter your email and password");
+        return;
+      }
 
-  this.isLoading = true;
+      this.isLoading = true;
 
-  const loginData = {
-    email: this.email,
-    password: this.password,
-  };
+      const loginData = {
+        email: this.email,
+        password: this.password,
+      };
 
-  try {
-    const response = await fetch("http://127.0.0.1:5000/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(loginData),
-    });
+      try {
+        const response = await fetch("http://127.0.0.1:5000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loginData),
+        });
 
-    const data = await response.json();
-    console.log(data);
+        const data = await response.json();
+        console.log(data);
 
-    if (data.success) {
-      // ✅ 登录成功，后端已发送验证码，跳转到验证码页面
-      alert("Verification code has been sent to your email.");
-      this.$router.push({
-        path: '/verify',
-        query: { email: this.email }
-      });
-    } else {
-      alert("Login Failure: " + data.message);
+        if (data.success) {
+          // ✅
+          alert("Verification code has been sent to your email.");
+          this.$router.push({
+            path: '/verify',
+            query: { email: this.email }
+          });
+        } else {
+          alert("Login Failure: " + data.message);
+        }
+      } catch (error) {
+        console.error("Request Error:", error);
+        alert("The login request failed, please try again later!");
+      } finally {
+        this.isLoading = false;
+      }
     }
-  } catch (error) {
-    console.error("Request Error:", error);
-    alert("The login request failed, please try again later!");
-  } finally {
-    this.isLoading = false;
-  }
-}
     ,
     resetForm() {
       this.email = "";
       this.password = "";
+    },
+
+    goToForgot() {
+      if (!this.isLoading) {
+        event.preventDefault();
+        console.log("Jump to the Retrieve page");
+        this.$router.push("/forgot");
+      }
+
     },
 
     goToRegister() {
@@ -157,10 +171,10 @@ export default {
         //this.$router.push(`/classrooms/${username}/${role}`);
         this.$router.push(
           {
-            path : '/home',
-            query : {
-              username : userInfo.username,
-              role : userInfo.role,
+            path: '/home',
+            query: {
+              username: userInfo.username,
+              role: userInfo.role,
             }
           }
         );
@@ -186,7 +200,8 @@ export default {
 .background-container {
   position: relative;
   width: 100%;
-  height: 100vh; /* Full viewport height */
+  height: 100vh;
+  /* Full viewport height */
   background-image: v-bind(currentUrl);
   background-size: cover;
   background-position: center;
@@ -201,7 +216,8 @@ export default {
   top: 0px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 3rem; /* Increased size */
+  font-size: 3rem;
+  /* Increased size */
   font-weight: bold;
   color: #4A90E2;
   text-align: center;
@@ -222,19 +238,24 @@ export default {
 .login-container {
   position: fixed;
   top: 200px;
-  padding: 30px; /* Increased padding */
-  border-radius: 15px; /* More rounded edges */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+  padding: 30px;
+  /* Increased padding */
+  border-radius: 15px;
+  /* More rounded edges */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  /* Stronger shadow */
   background-color: rgba(255, 255, 255, 0.8);
   width: 90%;
-  max-width: 500px; /* Increased max width */
+  max-width: 500px;
+  /* Increased max width */
   text-align: center;
 }
 
 /* Bigger Login Title */
 .login-title {
   margin-bottom: 25px;
-  font-size: 2.2rem; /* Increased size */
+  font-size: 2.2rem;
+  /* Increased size */
   font-weight: bold;
   color: #333;
 }
@@ -314,5 +335,4 @@ export default {
 .register-link:hover {
   text-decoration: underline;
 }
-
 </style>

@@ -107,7 +107,6 @@ export default {
       bookings: [],
       currentPage: 1,
       itemsPerPage: 10,
-     
       loading: false,
       error: null
     };
@@ -213,10 +212,6 @@ export default {
       return start;
     },
 
-    formatDateTime(datetime) {
-      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
-    },
-
     getRoleClass(role) {
       switch (role) {
         case 'Student':
@@ -232,6 +227,12 @@ export default {
       }
     },
 
+
+    formatDateTime(datetime) {
+      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
+    },
+
+  
 
     async getBookingsInformation() {
       this.loading = true;
