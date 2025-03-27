@@ -107,7 +107,7 @@ export default {
       bookings: [],
       currentPage: 1,
       itemsPerPage: 10,
-      itemsPerPage: 10,
+      
       loading: false,
       error: null
     };
@@ -233,24 +233,8 @@ export default {
     },
 
 
-    formatDateTime(datetime) {
-      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
-    },
-
-    getRoleClass(role) {
-      switch (role) {
-        case 'Student':
-          return 'student-card';
-        case 'Lecture':
-          return 'teacher-card';
-        case 'Tutor':
-          return 'teacher-card';
-        case 'Admin':
-          return 'admin-card';
-        default:
-          return '';
-      }
-    },
+  
+   
 
     async getBookingsInformation() {
       this.loading = true;

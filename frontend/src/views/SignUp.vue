@@ -252,6 +252,29 @@ export default {
   white-space: nowrap;
 }
 
+
+
+@media (max-width: 768px) {
+  .top-style {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    margin-top: 30px !important;
+    text-align: center !important;
+    font-size: 2rem !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .top-style h1 {
+    font-size: 2rem !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+    display: block !important;
+  }
+}
+
 .register-wrapper {
   display: flex;
   justify-content: center;
@@ -351,3 +374,77 @@ export default {
   cursor: not-allowed;
 }
 </style>
+@media (max-width: 768px) {
+  .top-style {
+    position: static; /* 不再 fixed */
+    transform: none;
+    width: 100%;
+    margin-top: 30px; /* 往下移动一点 */
+    text-align: center;
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .top-style h1 {
+    font-size: 2rem;
+    margin: 0 auto;
+  }
+
+  .register-wrapper {
+    padding: 0 16px;
+    height: auto;
+    align-items: flex-start;
+    margin-top: 40px;
+  }
+
+  .register-container {
+    position: static; /* 移除 fixed */
+    margin: 0 auto;
+    padding: 20px;
+    width: 100%;
+    max-width: 360px;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .form-row input {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px;
+  }
+
+  .form-row label {
+    font-size: 1rem;
+  }
+
+  .register-title {
+    font-size: 1.8rem;
+  }
+
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primary-btn,
+  .secondary-btn {
+    width: 100%;
+    font-size: 1rem;
+    padding: 12px;
+  }
+
+  .code-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    margin-top: 8px;
+  }
+
+  .additional-info {
+    font-size: 0.95rem;
+    text-align: center;
+  }
