@@ -20,7 +20,7 @@
         <transition-group v-if="paginatedBookings.length" name="booking-list" tag="div" class="booking-grid">
           <!---->
           <div v-for="booking in paginatedBookings" :key="booking.booking_id" class="booking-card" :class="[
-            isPastBooking(getCorrectTime(booking.classroom_details.start_time)) ? 'past-booking' : 'active-booking',
+            isPastBooking(booking.classroom_details.start_time) ? 'past-booking' : 'active-booking',
             getRoleClass(booking.user_role)
           ]">
 
@@ -48,18 +48,21 @@
                 </div>
               </div>
 
-              
-
               <div class="time-range">
                 <div class="time-block">
                   <span class="time-label">Start Time</span>
-                  <span class="time-value">{{ formatDateTime(getCorrectTime(booking.classroom_details.start_time))
-                  }}</span>
+                  <span class="time-value">
+                    {{ formatDate(getCorrectTime(booking.classroom_details.start_time)) }}
+                    {{ formatTime(getCorrectTime(booking.classroom_details.start_time)) }}
+                  </span>
                 </div>
                 <div class="time-separator">→</div>
                 <div class="time-block">
                   <span class="time-label">End Time</span>
-                  <span class="time-value">{{ formatDateTime(getEndTime(booking.classroom_details.start_time)) }}</span>
+                  <span class="time-value">
+                    {{ formatDate(getEndTime(booking.classroom_details.start_time)) }}
+                    {{ formatTime(getEndTime(booking.classroom_details.start_time)) }}
+                  </span>
                 </div>
                 <el-button class="cancel-button" @click="handleCancelBooking(booking.booking_id)"
                   :disabled="isPastBooking(getCorrectTime(booking.classroom_details.start_time))">
@@ -130,7 +133,7 @@ export default {
     },
     parseToken(token) {
       try {
-       
+
         const base64Url = token.split(".")[1];
         const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
         return JSON.parse(decodeURIComponent(escape(atob(base64))));
@@ -185,25 +188,37 @@ export default {
 
     isPastBooking(start_time) {
       if (!start_time) return true;
-      const startDate = new Date(start_time);
+      // Compare using UTC time
+      const startDate = this.getCorrectTime(start_time);
       return startDate.getTime() < Date.now();
     },
 
-
     getCorrectTime(startTime) {
       if (!startTime) return new Date();
-      const start = new Date(startTime);
-      start.setHours(start.getHours() - 8);
-      start.setHours(start.getHours() - 8);
-      return start;
+
+      // If it's already a Date object, return it directly
+      if (startTime instanceof Date) {
+        return new Date(startTime.getTime()); // Return a new copy
+      }
+
+      // If it's a string, parse it as UTC
+      if (typeof startTime === 'string') {
+        // Handle both ISO format and your backend format
+        const isoString = startTime.includes('T') ? startTime : startTime.replace(' ', 'T') + 'Z';
+        return new Date(isoString);
+      }
+
+      // Fallback for other cases
+      return new Date(startTime);
     },
 
     getEndTime(startTime) {
       if (!startTime) return new Date();
-      const start = new Date(startTime);
-      start.setHours(start.getHours() - 6);
-      start.setHours(start.getHours() - 6);
-      return start;
+      const start = this.getCorrectTime(startTime);
+      // Use UTC hours to avoid timezone interference
+      const end = new Date(start);
+      end.setUTCHours(end.getUTCHours() + 2);
+      return end;
     },
 
     getRoleClass(role) {
@@ -220,13 +235,30 @@ export default {
           return '';
       }
     },
-
-
-    formatDateTime(datetime) {
-      return datetime ? new Date(datetime).toLocaleString() : 'N/A';
+    adjustItemsPerPage() {
+      this.itemsPerPage = window.innerWidth <= 1000 ? 2 : 10;
+      this.currentPage = 1;
     },
 
-  
+    formatDate(datetime) {
+      if (!datetime) return 'N/A';
+      const date = new Date(datetime);
+      // Use UTC date components
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
+
+    formatTime(datetime) {
+      if (!datetime) return 'N/A';
+      const date = new Date(datetime);
+      // Use UTC time components
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    },
+
 
     async getBookingsInformation() {
       this.loading = true;
@@ -238,9 +270,9 @@ export default {
         this.loading = false;
         return;
       }
-    
+
       try {
-        
+
         const response = await fetch(`http://127.0.0.1:5000/mybookings?email=${encodeURIComponent(userInfo.email)}`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -272,15 +304,20 @@ export default {
     },
 
 
+
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
       }
     }
   },
+
+
   mounted() {
     this.getInfor();
     this.getBookingsInformation();
+    this.adjustItemsPerPage();
+    window.addEventListener('resize', this.adjustItemsPerPage);
   }
 };
 </script>
@@ -305,35 +342,20 @@ export default {
   background-color: #f5e5ef !important;
 }
 
-.student-card {
-  border-left-color: #366bf1 !important;
-  background-color: #dfe3ff !important;
-}
-
-.teacher-card {
-  border-left-color: #66bb6a !important;
-  background-color: #e8f5e9 !important;
-}
-
-.admin-card {
-  border-left-color: #ea6bcd !important;
-  background-color: #f5e5ef !important;
-}
-
 .my-bookings-container {
-  width: 100%;
-  min-height: 100vh;
+  width: calc(100% - 3rem);
+  /* Account for padding */
+  max-width: 100%;
   padding: 0 1.5rem;
   margin: 0 auto;
-  background: #f8f9fa;
-  left: 0%;
- 
+  box-sizing: border-box;
+  /* Include padding in width calculation */
 }
 
 
 .page-title {
   color: #2c3e50;
-  font-size: 2rem;
+  font-size: 2.8rem;
   margin: 2rem 0;
   text-align: center;
 }
@@ -345,17 +367,20 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   width: 100%;
   padding: 1rem 0;
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+  margin: 0;
+  /* Remove any default margins */
 }
 
 .booking-card {
-  background: white;
+  width: 100%;
+  box-sizing: border-box;
+  /* Include padding in width calculation */
+  /* ... rest of your existing card styles ... */
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-left: 4px solid #3498db;
-  display: flex;
-  flex-direction: column;
 }
 
 .active-booking {
@@ -569,6 +594,11 @@ export default {
   }
 
   .booking-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    width: 95%;
+    padding: 1rem 0;
     grid-template-columns: 1fr;
   }
 }
@@ -578,5 +608,62 @@ export default {
     grid-template-columns: repeat(5, 1fr);
   }
 }
-</style>
 
+@media (max-width: 768px) {
+  .booking-card {
+    padding: 1rem;
+    border-radius: 10px;
+    margin-left: -10px;
+  }
+
+  .room-name {
+    font-size: 1rem;
+  }
+
+  .info-item {
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .info-label,
+  .time-label {
+    font-size: 0.75rem;
+  }
+
+  .info-value,
+  .time-value {
+    font-size: 0.9rem;
+  }
+
+  .time-range {
+    gap: 0.5rem;
+    padding-top: 0.8rem;
+  }
+
+  .cancel-button {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pagination-controls span {
+    font-size: 0.95rem;
+  }
+
+  .my-bookings-container {
+    margin-right: -10px;
+    margin-top: 120px;
+
+  }
+
+  ::v-deep(.el-header) {
+
+    z-index: 1000;
+
+  }
+}
+</style>

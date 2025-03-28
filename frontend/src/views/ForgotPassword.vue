@@ -1,7 +1,7 @@
 <template>
   <div class="login-wrapper">
     <div class="login-container card">
-      <h2>Forget password?</h2>
+      <h2>Reset Password</h2>
 
       <!-- Step 1: Email input -->
       <div v-if="step === 1" class="form-section">

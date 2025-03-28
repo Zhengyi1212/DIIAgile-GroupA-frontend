@@ -38,10 +38,11 @@
           </div>
 
           <div class="date-selector">
-            <button v-for="offset in 7" :key="offset" @click="selectedDate = getFormattedDate(offset - 1)"
+            <button v-for="offset in 7" :key="offset" @click="handleDateChange(offset - 1)"
               :class="{ active: selectedDate === getFormattedDate(offset - 1) }">
               {{ getFormattedDate(offset - 1) }}
             </button>
+
           </div>
         </div>
 
@@ -56,14 +57,9 @@
 
           <!-- Classroom Grid -->
           <div class="classroom-grid">
-            <div 
-  v-for="room in paginatedRooms" 
-  :key="room.classroom_name + room.date" 
-  class="classroom-card"
-  :class="{ selected: selectedRoom && selectedRoom.classroom_name === room.classroom_name }"
-  @click="selectRoom(room)"
-  @contextmenu.prevent="handleRightClick(room, $event)"
->
+            <div v-for="room in paginatedRooms" :key="room.classroom_name + room.date" class="classroom-card"
+              :class="{ selected: selectedRoom && selectedRoom.classroom_name === room.classroom_name }"
+              @click="selectRoom(room)" @contextmenu.prevent="handleRightClick(room, $event)">
 
               <div class="card-header">
                 <h3 class="room-name">{{ room.classroom_name }}</h3>
@@ -82,38 +78,28 @@
 
         <!-- Time Spans Section - Now full width and aligned -->
         <div v-if="selectedRoom" class="time-spans-container">
-  <div class="time-spans-section">
-    <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
-    <div class="time-grid">
-      <div 
-        v-for="timeSpan in timeSpans" 
-        :key="timeSpan.start_time" 
-        class="time-slot"
-        :class="{ 
-          'available': timeSpan.is_available, 
-          'booked': !timeSpan.is_available,
-          'clickable': timeSpan.is_available
-        }"
-        @click="timeSpan.is_available ? handleTimeSlotClick(timeSpan) : null"
-      >
-        <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
-        <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
-      </div>
-    </div>
-  </div>
-</div>
+          <div class="time-spans-section">
+            <h2>Time Spans for {{ selectedRoom.classroom_name }} on {{ selectedRoom.date }}</h2>
+            <div class="time-grid">
+              <div v-for="timeSpan in timeSpans" :key="timeSpan.start_time" class="time-slot" :class="{
+                'available': timeSpan.is_available,
+                'booked': !timeSpan.is_available,
+                'clickable': timeSpan.is_available
+              }" @click="timeSpan.is_available ? handleTimeSlotClick(timeSpan) : null">
+                <span>{{ formatTimeSpan(timeSpan.start_time) }}</span>
+                <span>{{ timeSpan.is_available ? "Available" : "Booked" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
-  <!-- Right-click context menu -->
-  <ul 
-        v-if="contextMenuVisible"
-        class="context-menu"
-        :style="contextMenuStyle"
-        @click.stop
-      >
+      <!-- Right-click context menu -->
+      <ul v-if="contextMenuVisible" class="context-menu" :style="contextMenuStyle" @click.stop>
         <li @click="handleModifyClick">🛠 Modify Room</li>
       </ul>
-
     </el-main>
+
   </el-container>
 </template>
 <script>
@@ -128,7 +114,7 @@ export default {
     return {
       username: '',
       role: '',
-      email : '',
+      email: '',
       rooms: [
       ],
       currentPage: 1,
@@ -145,8 +131,8 @@ export default {
 
       ],
       contextMenuVisible: false,
-contextMenuStyle: { top: '0px', left: '0px' },
-contextMenuRoom: null
+      contextMenuStyle: { top: '0px', left: '0px' },
+      contextMenuRoom: null
 
     };
   },
@@ -196,28 +182,64 @@ contextMenuRoom: null
     this.getInfor();
     this.getClassroomInformationFromDB()
     document.addEventListener("click", this.hideContextMenu);
+    this.adjustRoomsPerPage();
+    window.addEventListener("resize", this.adjustRoomsPerPage);
   },
 
   methods: {
+    handleDateChange(offset) {
+      this.selectedDate = this.getFormattedDate(offset);
+      if (this.selectedRoom) {
+        const updatedRoom = this.filteredRooms.find(
+          r => r.classroom_name === this.selectedRoom.classroom_name &&
+            r.date === this.selectedDate
+        );
+        if (updatedRoom) {
+          this.scrollToRoom(updatedRoom);        // 自动跳到分页
+          this.selectRoom(updatedRoom);          // 自动刷新时间段
+        } else {
+          this.selectedRoom = null;
+          this.timeSpans = [];
+        }
+      }
+    },
+    scrollToRoom(room) {
+      const index = this.filteredRooms.findIndex(
+        r => r.classroom_name === room.classroom_name && r.date === room.date
+      );
+      if (index !== -1) {
+        this.currentPage = Math.floor(index / this.roomsPerPage) + 1;
+      }
+    },
+
+
+    adjustRoomsPerPage() {
+      if (window.innerWidth <= 800) {
+        this.roomsPerPage = 2;
+      } else {
+        this.roomsPerPage = 12;
+      }
+
+    },
     handleRightClick(room, event) {
-  if (this.role !== 'Admin') return;
-  this.contextMenuRoom = room;
-  this.contextMenuStyle = {
-    top: `${event.clientY}px`,
-    left: `${event.clientX}px`
-  };
-  this.contextMenuVisible = true;
-},
+      if (this.role !== 'Admin') return;
+      this.contextMenuRoom = room;
+      this.contextMenuStyle = {
+        top: `${event.clientY}px`,
+        left: `${event.clientX}px`
+      };
+      this.contextMenuVisible = true;
+    },
 
-handleModifyClick() {
-  this.selectedRoom = this.contextMenuRoom;
-  this.contextMenuVisible = false;
-  this.modifyRoom();
-},
+    handleModifyClick() {
+      this.selectedRoom = this.contextMenuRoom;
+      this.contextMenuVisible = false;
+      this.modifyRoom();
+    },
 
-hideContextMenu() {
-  this.contextMenuVisible = false;
-},
+    hideContextMenu() {
+      this.contextMenuVisible = false;
+    },
 
 
     async getClassroomInformationFromDB() {
@@ -241,7 +263,7 @@ hideContextMenu() {
         if (data.success) {
           // Update the rooms variable with the retrieved classrooms
           this.rooms = data.classrooms;
-         
+
         } else {
           // Handle failure case
           alert("Classroom information retrieval failure: " + data.message);
@@ -287,23 +309,23 @@ hideContextMenu() {
     handleTimeSlotClick(slot) {
       if (!this.selectedRoom) return;
 
-     // ✅ 保留下面这一段，作用一致
-ElMessageBox.confirm(
-  `Do you want to book <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>?`,
-  "Confirm Booking",
-  {
-    dangerouslyUseHTMLString: true,
-    confirmButtonText: "Yes, Book it!",
-    cancelButtonText: "Cancel",
-    type: "info",
-    customClass: "custom-message-box",
-    center: true
-  }
-)
-.then(() => {
-  this.confirmBooking(slot);
-})
-.catch(() => {});
+
+      ElMessageBox.confirm(
+        `Do you want to book <b>${this.selectedRoom.classroom_name}</b> on <b>${this.selectedDate}</b> at <b>${slot.start_time}</b>?`,
+        "Confirm Booking",
+        {
+          dangerouslyUseHTMLString: true,
+          confirmButtonText: "Yes, Book it!",
+          cancelButtonText: "Cancel",
+          type: "info",
+          customClass: "custom-message-box",
+          center: true
+        }
+      )
+        .then(() => {
+          this.confirmBooking(slot);
+        })
+        .catch(() => { });
 
     },
 
@@ -313,13 +335,8 @@ ElMessageBox.confirm(
         return;
       }
 
-      //const userEmail = prompt("Please enter your email to confirm the booking:");
-     // if (!userEmail) {
-       // alert("Email is required to confirm the booking.");
-       // return;
-     // }
-
       try {
+
         const url = "http://127.0.0.1:5000/classrooms";
         console.log(`${this.selectedRoom.date} ${slot.start_time}`)
         const response = await fetch(url, {
@@ -329,10 +346,10 @@ ElMessageBox.confirm(
           },
           body: JSON.stringify({
             classroom_name: this.selectedRoom.classroom_name,
-            time: `${this.selectedRoom.date}T${slot.start_time}`, 
-            // Combine date and start_time
+            time: `${this.selectedRoom.date}T${slot.start_time}`,
+
             email: this.email,
-            request_type : "booking"
+            request_type: "booking"
           }),
         });
 
@@ -340,7 +357,7 @@ ElMessageBox.confirm(
         console.log("Booking Response:", data);
 
         if (data.success) {
-          alert("Booking confirmed successfully!");
+          alert("Booking confirmed successfully! An email is send to your mailbox.");
           // Update the time slot's availability in the frontend
           slot.is_available = false;
         } else {
@@ -394,11 +411,22 @@ ElMessageBox.confirm(
         alert("Failed to fetch time spans!");
       }
     },
+    async refreshRoomsAndReselect(classroomName, date) {
+      await this.getClassroomInformationFromDB();
+      const updatedRoom = this.filteredRooms.find(
+        r => r.classroom_name === classroomName && r.date === date
+      );
+      if (updatedRoom) {
+        this.scrollToRoom(updatedRoom);
+        this.selectRoom(updatedRoom);
+      } else {
+        this.selectedRoom = null;
+      }
+    },
 
 
 
     modifyRoom() {
-      // 保存当前房间的信息，以便在点击取消时恢复
       const originalRoom = { ...this.selectedRoom };
 
       ElMessageBox({
@@ -408,11 +436,9 @@ ElMessageBox.confirm(
         <label>New Capacity:</label>
         <input id="newCapacity" type="number" value="${this.selectedRoom.capacity}" placeholder="Enter new capacity" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
         <label style="margin-top: 10px; display: block;">New Equipment:</label>
-        <input id="newEquipment" type="text" value="${this.selectedRoom.equipment}" placeholder="Enter new equipment" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
-        
+        <input id="newEquipment" type="text" value="${this.selectedRoom.device || ''}" placeholder="Enter new equipment" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
         <label style="margin-top: 10px;">Disable Bookings Between:</label>
         <div>
-          <!-- 选择禁用的起始日期和时间 -->
           <input id="disableStartDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
           <select id="disableStartTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
             <option value="">Select Start Time</option>
@@ -422,8 +448,6 @@ ElMessageBox.confirm(
             <option value="16:00">16:00</option>
             <option value="19:00">19:00</option>
           </select>
-          
-          <!-- 选择禁用的结束日期和时间 -->
           <input id="disableEndDate" type="date" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
           <select id="disableEndTime" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
             <option value="">Select End Time</option>
@@ -441,66 +465,92 @@ ElMessageBox.confirm(
         confirmButtonText: "Save Changes",
         cancelButtonText: "Cancel",
         customClass: "custom-message-box",
-        beforeClose: (action, instance, done) => {
-          const newCapacity = document.getElementById("newCapacity") ? document.getElementById("newCapacity").value.trim() : '';
-          const newEquipment = document.getElementById("newEquipment") ? document.getElementById("newEquipment").value.trim() : '';
-          const disableStartDate = document.getElementById("disableStartDate") ? document.getElementById("disableStartDate").value : '';
-          const disableStartTime = document.getElementById("disableStartTime") ? document.getElementById("disableStartTime").value : '';
-          const disableEndDate = document.getElementById("disableEndDate") ? document.getElementById("disableEndDate").value : '';
-          const disableEndTime = document.getElementById("disableEndTime") ? document.getElementById("disableEndTime").value : '';
+        beforeClose: async (action, instance, done) => {
+          const newCapacity = document.getElementById("newCapacity")?.value.trim();
+          const newEquipment = document.getElementById("newEquipment")?.value.trim();
+          const disableStartDate = document.getElementById("disableStartDate")?.value;
+          const disableStartTime = document.getElementById("disableStartTime")?.value;
+          const disableEndDate = document.getElementById("disableEndDate")?.value;
+          const disableEndTime = document.getElementById("disableEndTime")?.value;
 
-          // 如果点击的是确认按钮（即保存更改）
           if (action === "confirm") {
-            // 检查容量是否有效
             if (newCapacity && !/^[1-9][0-9]*$/.test(newCapacity)) {
-              ElMessage({ type: "warning", message: "Capacity must be a positive number!" });
-              done(); // 确保弹窗关闭
+              ElMessage({ type: "warning", message: "Capacity must not be a positive number or a decimal !" });
+              done();
               return;
             }
 
-            // 更新房间信息
-            if (newCapacity) {
-              this.selectedRoom.capacity = parseInt(newCapacity);
-            }
-            if (newEquipment) {
-              this.selectedRoom.equipment = newEquipment;
-            }
-
-            // 如果设置了“禁用预定时间”，更新房间的预定信息
+            let disabledTimestamps = [];
             if (disableStartDate && disableStartTime && disableEndDate && disableEndTime) {
-              const disableStartDateTime = new Date(`${disableStartDate}T${disableStartTime}:00`);
-              const disableEndDateTime = new Date(`${disableEndDate}T${disableEndTime}:00`);
-
-              if (!this.selectedRoom.disabledTimes) {
-                this.selectedRoom.disabledTimes = [];
-              }
-
-              // 禁用从选择的开始时间到结束时间的所有时间段
-              for (let currentDate = disableStartDateTime; currentDate <= disableEndDateTime; currentDate.setHours(currentDate.getHours() + 2)) {
-                this.selectedRoom.disabledTimes.push(new Date(currentDate));
-              }
-
-              ElMessage({ type: "success", message: `Bookings disabled from ${disableStartDateTime.toLocaleString()} to ${disableEndDateTime.toLocaleString()}.` });
+              disabledTimestamps = this.generateFixedTimeSlots(
+                `${disableStartDate}T${disableStartTime}:00`,
+                `${disableEndDate}T${disableEndTime}:00`
+              );
             }
 
-            ElMessage({ type: "success", message: "Room information updated successfully." });
+
+            try {
+              const res = await fetch("http://127.0.0.1:5000/classroom_information/modify_room", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  classroom_name: this.selectedRoom.classroom_name,
+                  new_capacity: newCapacity,
+                  device: newEquipment,
+                  admin_email: this.email,
+                  disabled_slots: disabledTimestamps
+                })
+              });
+
+              const data = await res.json();
+              if (data.success) {
+                ElMessage({ type: "success", message: "Room updated and this time spam disabled." });
+                await this.refreshRoomsAndReselect(this.selectedRoom.classroom_name, this.selectedDate);
+              } else {
+                ElMessage({ type: "error", message: data.message || "Failed to modify room." });
+              }
+            } catch (err) {
+              console.error("Fetch error:", err);
+              ElMessage({ type: "error", message: "Server error while modifying room." });
+            }
           } else {
-            // 如果点击了取消按钮，恢复原来的房间信息
             this.selectedRoom = originalRoom;
           }
 
-          // 确保无论点击什么按钮，done() 都被调用
           done();
         }
       }).catch((error) => {
-        // 处理取消操作的拒绝情况
         if (error === "cancel") {
-          console.log("用户取消了操作。");
+          console.log("Cancel operation");
         } else {
-          console.error("意外错误: ", error);
+          console.error("Error", error);
         }
       });
     },
+    generateFixedTimeSlots(startStr, endStr) {
+      const fixedTimes = ["08:00:00", "10:00:00", "14:00:00", "16:00:00", "19:00:00"];
+      const result = [];
+
+      const start = new Date(startStr);
+      const end = new Date(endStr);
+
+      const current = new Date(start);
+      while (current <= end) {
+        const dateStr = current.toISOString().split("T")[0]; // "2025-03-28"
+
+        for (const time of fixedTimes) {
+          const full = new Date(`${dateStr}T${time}`);
+          if (full >= start && full < end) {
+            result.push(`${dateStr} ${time}`);
+          }
+        }
+
+        current.setDate(current.getDate() + 1);
+      }
+
+      return result;
+    },
+
 
 
 
@@ -528,6 +578,7 @@ ElMessageBox.confirm(
         });
     },
 
+
     nextPage() {
       if (this.currentPage < this.totalPages) this.currentPage++;
     },
@@ -540,13 +591,13 @@ ElMessageBox.confirm(
 </script>
 
 
-
 <style scoped>
 .el-main {
   padding-top: 10px;
   background: #f0f2f5;
-  margin-top: 30px; /* Light grey background for the entire page */
- 
+  margin-top: 100px;
+  /* Light grey background for the entire page */
+
 }
 
 .main-content {
@@ -571,7 +622,7 @@ ElMessageBox.confirm(
   gap: 16px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  
+
   border-radius: 20px;
 }
 
@@ -581,6 +632,7 @@ ElMessageBox.confirm(
   border-radius: 8px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
+  margin-right: -30px;
 }
 
 .classroom-grid {
@@ -631,9 +683,11 @@ ElMessageBox.confirm(
   0% {
     box-shadow: 0 0 0 0 rgba(0, 115, 230, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(0, 115, 230, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(0, 115, 230, 0);
   }
@@ -775,28 +829,6 @@ ElMessageBox.confirm(
   background: #e6f0fa;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .classroom-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  }
-  
-  .time-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-  
-  .filters-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-group {
-    flex-direction: column;
-    align-items: flex-start;
-    border-radius: 15px; /* Rounded group */
-  }
-  
-}
 .context-menu {
   position: fixed;
   z-index: 9999;
@@ -822,4 +854,119 @@ ElMessageBox.confirm(
   background-color: #f0f0f0;
 }
 
+.time-slot.disabled-slot {
+  background: #fdf3d6;
+  color: #a67c00;
+  border: 1px solid #f1d78a;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .content-container {
+
+    margin-right: -15px;
+  }
+
+  .classroom-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  .time-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .styled-select,
+  .styled-input {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+
+  .date-selector {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .date-selector button {
+    flex: 1 1 45%;
+    min-width: 100px;
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pagination-controls button {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .room-info {
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+
+  .capacity-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .time-slot {
+    font-size: 12px;
+    padding: 10px;
+  }
+
+  .room-name {
+    font-size: 14px;
+  }
+
+  .main-content {
+
+    padding: 10px;
+  }
+
+  .time-spans-container {
+    width: 80%;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .time-spans-section {
+    width: 80%;
+  }
+
+
+
+}
 </style>

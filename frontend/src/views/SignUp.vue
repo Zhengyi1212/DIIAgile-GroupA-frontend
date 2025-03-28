@@ -22,11 +22,12 @@
             <p v-if="codeSent" style="color: green; font-size: 0.9em;">✔ Code has been sent to your email</p>
           </div>
 
-
           <div class="form-row">
             <label for="code">Verification Code</label>
             <input id="code" v-model="code" type="text" placeholder="Enter verification code" required>
           </div>
+
+
 
 
           <!-- Username Input -->
@@ -48,12 +49,13 @@
               required>
           </div>
 
-          <!-- Invite Code Input -->
-          <div class="form-row">
+           <!-- Invite Code Input -->
+           <div class="form-row">
             <label for="inviteCode">Invite Code</label>
             <input id="inviteCode" v-model="inviteCode" type="text" placeholder="Enter invite code (optional)">
           </div>
-          <!-- Verify Code Input -->
+          <!-- Verify -->
+
 
 
           <!-- Submit and Reset Buttons -->
@@ -222,74 +224,47 @@ export default {
 
 
 <style scoped>
-/* Styles consistent with login page */
 .background-container {
   position: relative;
   width: 100%;
   height: 100vh;
-  /* Full viewport height */
-  background-image: v-bind(currentUrl);
   background-size: cover;
   background-position: center;
   transition: background-image 0.5s ease-in-out;
   background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Enlarged Title for Better Visibility */
 .top-style {
-  display: flex;
-  position: fixed;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.5rem;
-  /* Increased size */
+  position: relative;
+  font-size: 2rem;
   font-weight: bold;
   color: #4A90E2;
   text-align: center;
   font-family: 'Poppins', sans-serif;
   text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
-  white-space: nowrap;
-}
-
-
-
-@media (max-width: 768px) {
-  .top-style {
-    position: static !important;
-    transform: none !important;
-    width: 100% !important;
-    margin-top: 30px !important;
-    text-align: center !important;
-    font-size: 2rem !important;
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .top-style h1 {
-    font-size: 2rem !important;
-    margin: 0 auto !important;
-    text-align: center !important;
-    display: block !important;
-  }
+  margin-bottom: 20px;
+  padding: 10px;
+  z-index: 1;
 }
 
 .register-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  ;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .register-container {
-  position: fixed;
-  padding: 15px;
+  padding: 20px;
   border-radius: 10px;
-  top: 150px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.85);
   width: 100%;
   max-width: 400px;
   text-align: center;
@@ -313,19 +288,40 @@ export default {
 }
 
 .form-row input {
-  width: 94%;
+  width: 100%;
   padding: 10px;
+  box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
 
-.primary-btn {
-  padding: 10px 20px;
-  background-color: #007bff;
+.code-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #28a745;
   color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.code-btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+.primary-btn,
+.secondary-btn {
+  padding: 10px 20px;
+  margin: 5px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.primary-btn {
+  background-color: #007bff;
+  color: white;
 }
 
 .primary-btn:hover {
@@ -333,12 +329,8 @@ export default {
 }
 
 .secondary-btn {
-  padding: 10px 20px;
   background-color: #6c757d;
   color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .secondary-btn:hover {
@@ -359,92 +351,47 @@ export default {
   text-decoration: underline;
 }
 
-.code-btn {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.code-btn:disabled {
-  background-color: gray;
-  cursor: not-allowed;
-}
-</style>
-@media (max-width: 768px) {
-  .top-style {
-    position: static; /* 不再 fixed */
-    transform: none;
-    width: 100%;
-    margin-top: 30px; /* 往下移动一点 */
-    text-align: center;
-    font-size: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .top-style h1 {
-    font-size: 2rem;
-    margin: 0 auto;
-  }
-
+/* 🔻 Mobile responsive */
+@media (max-width: 600px) {
   .register-wrapper {
-    padding: 0 16px;
-    height: auto;
-    align-items: flex-start;
-    margin-top: 40px;
+    margin-top: -30px;
+  }
+
+  .top-style {
+    font-size: 1.1rem;
+    text-align: center;
+    position: relative;
+    top: 50px;
+    left: 0;
+    transform: none;
   }
 
   .register-container {
-    position: static; /* 移除 fixed */
-    margin: 0 auto;
-    padding: 20px;
+    padding: 15px;
     width: 100%;
-    max-width: 360px;
-    border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.85);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  .form-row input {
-    width: 100%;
-    font-size: 1rem;
-    padding: 12px;
-  }
-
-  .form-row label {
-    font-size: 1rem;
+    max-width: 90%;
   }
 
   .register-title {
-    font-size: 1.8rem;
+
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+    color: #333;
   }
 
-  .form-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .form-row input {
+    font-size: 1rem;
   }
 
   .primary-btn,
   .secondary-btn {
     width: 100%;
     font-size: 1rem;
-    padding: 12px;
   }
 
   .code-btn {
     width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    margin-top: 8px;
+    font-size: 0.9rem;
   }
-
-  .additional-info {
-    font-size: 0.95rem;
-    text-align: center;
-  }
+}
+</style>
