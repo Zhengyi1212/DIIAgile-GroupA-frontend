@@ -109,6 +109,30 @@ export default {
     };
   },
   computed: {
+    handleDateChange(offset) {
+  this.selectedDate = this.getFormattedDate(offset);
+  if (this.selectedRoom) {
+    const updatedRoom = this.filteredRooms.find(
+      r => r.classroom_name === this.selectedRoom.classroom_name &&
+           r.date === this.selectedDate
+    );
+    if (updatedRoom) {
+      this.scrollToRoom(updatedRoom);       
+      this.selectRoom(updatedRoom);        
+    } else {
+      this.selectedRoom = null;
+      this.timeSpans = [];
+    }
+  }
+},
+scrollToRoom(room) {
+  const index = this.filteredRooms.findIndex(
+    r => r.classroom_name === room.classroom_name && r.date === room.date
+  );
+  if (index !== -1) {
+    this.currentPage = Math.floor(index / this.roomsPerPage) + 1;
+  }
+},
     totalPages() {
       return Math.ceil(this.bookings.length / this.itemsPerPage);
     },

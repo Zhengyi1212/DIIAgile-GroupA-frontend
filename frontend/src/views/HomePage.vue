@@ -124,7 +124,6 @@ export default {
   background: rgba(255, 255, 255, 0.9);
 }
 
-/* 手机端适配样式 */
 @media (max-width: 768px) {
   .welcome-text {
     font-size: 1.5rem;
